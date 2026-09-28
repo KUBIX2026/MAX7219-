@@ -106,7 +106,24 @@ Tras encender el sistema, configura **cada chip**. Para ello, repite la misma pa
 
 Guarda el patrón de cada indicador como ocho grupos de cuatro bytes: `bitmap[posición][módulo]`. La correspondencia entre el índice de módulo y su ubicación visible se determina en la prueba de montaje.
 
-![Diagrama de Flujo - Matriz LED](../diagramas/Diagrama%de%Flujo-Matriz%led.drawio.png)
+```mermaid
+graph TD
+    A([Solicitud: Activar Indicador]) --> B["Inicialización MAX7219 via SPI<br>- CS = LOW<br>- Enviar Registros: Shutdown, Decode, ScanLimit, Intensity<br>- CS = HIGH"]
+    
+    B --> C["Carga de Mapa de Píxeles<br>Cargar patrón ERR o X en buffer de matriz"]
+    
+    C --> D["FASE 1: Mostrar Falla<br>- CS = LOW<br>- Enviar 64 bits/fila via DIN/CLK<br>- CS = HIGH Latch<br>- Esperar 500ms"]
+    
+    D --> E["FASE 2: Apagar Pantalla<br>- CS = LOW<br>- Enviar 0x00 a todas las filas<br>- CS = HIGH Latch<br>- Esperar 500ms"]
+    
+    E --> F{"¿El error persiste?"}
+    
+    F -- si --> D
+    F -- No --> G["Limpiar Pantalla<br>- Datos = 0x00<br>- CS = HIGH"]
+    
+    G --> H([Retornar al Flujo Principal])
+```
+
 La limpieza requiere escribir `0x00` en **los ocho registros de cada módulo**. Subir `LOAD` no borra ni alterna por sí solo los LED. Para evitar esperas bloqueantes, un sistema que atienda otras tareas puede alternar el bitmap y la pantalla vacía con un temporizador de 500 ms.
 
 ## 7. Ejemplo de implementación
