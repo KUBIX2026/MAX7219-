@@ -106,19 +106,7 @@ Tras encender el sistema, configura **cada chip**. Para ello, repite la misma pa
 
 Guarda el patrón de cada indicador como ocho grupos de cuatro bytes: `bitmap[posición][módulo]`. La correspondencia entre el índice de módulo y su ubicación visible se determina en la prueba de montaje.
 
-```mermaid
-flowchart TD
-    A[Detectar falla] --> B[Seleccionar bitmap]
-    B --> C[Escribir 8 registros en 4 módulos]
-    C --> D{¿Persiste la falla?}
-    D -- Sí --> E[Esperar 500 ms]
-    E --> F[Escribir ceros en los 8 registros]
-    F --> G[Esperar 500 ms]
-    G --> D2{¿Persiste la falla?}
-    D2 -- Sí --> C
-    D2 -- No --> H
-    D -- No --> H[Limpiar pantalla o mostrar estado normal]
-```
+![Diagrama de Flujo - Matriz LED](diagrams/Diagrama%20de%20Flujo-Matriz%20led.drawio.png)
 
 La limpieza requiere escribir `0x00` en **los ocho registros de cada módulo**. Subir `LOAD` no borra ni alterna por sí solo los LED. Para evitar esperas bloqueantes, un sistema que atienda otras tareas puede alternar el bitmap y la pantalla vacía con un temporizador de 500 ms.
 
