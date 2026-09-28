@@ -106,7 +106,7 @@ Tras encender el sistema, configura **cada chip**. Para ello, repite la misma pa
 
 Guarda el patrón de cada indicador como ocho grupos de cuatro bytes: `bitmap[posición][módulo]`. La correspondencia entre el índice de módulo y su ubicación visible se determina en la prueba de montaje.
 
-![Diagrama de Flujo - Matriz LED](diagrams/Diagrama%20de%20Flujo-Matriz%20led.drawio.png)
+![Diagrama de Flujo - Matriz LED](diagramas/Diagrama%20de%20Flujo-Matriz%20led.drawio.png)
 
 La limpieza requiere escribir `0x00` en **los ocho registros de cada módulo**. Subir `LOAD` no borra ni alterna por sí solo los LED. Para evitar esperas bloqueantes, un sistema que atienda otras tareas puede alternar el bitmap y la pantalla vacía con un temporizador de 500 ms.
 
