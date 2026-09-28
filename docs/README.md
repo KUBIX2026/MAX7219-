@@ -33,7 +33,7 @@ Este documento explica cómo enviar indicadores de falla desde un microcontrolad
 > * **Conflicto de Voltajes:** Los pines de I/O de la FPGA operan con lógica de **3.3V LVCMOS**, mientras que el controlador **MAX7219 se alimenta a 5V**.
 > * **Umbral de Reconocimiento:** El MAX7219 requiere un voltaje de entrada alto ($V_{IH}$) de al menos **3.5V** para garantizar la lectura de un `'1'` lógico. Enviar señales directamente a 3.3V desde la FPGA puede provocar instabilidad, pérdida de datos o pantallas que no responden.
 > * **Solución Recomendada:** Conectar un **Conversor de Niveles Lógicos (Logic Level Shifter)** en las líneas unidireccionales del bus SPI (`DIN`, `CLK` y `CS/LOAD`) para elevar las señales de **3.3V a 5V**. 
-> * **Alimentación:** Asegúrate de conectar el pin $V_{CC}$ del MAX7219 a una fuente de 5V adecuada y **compartir la misma tierra (GND)** entre la FPGA y el módulo LED.
+
 
 ## 2. Temporización de la transferencia
 
