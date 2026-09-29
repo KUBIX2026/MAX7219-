@@ -160,6 +160,43 @@ función configurar(registro, dato):
 - El valor `0xA0` solo representa el patrón de bits de una posición; la orientación física de esos puntos depende de la placa.
 - Dimensiona la fuente y el cableado para el consumo de los módulos y sus LED; ajusta la intensidad y la resistencia de configuración según la documentación del hardware.
 
+## 9. Comandos 
+`` 
+```
+## 📋 Comandos y Registros del MAX7219
+El *MAX7219* se controla mediante tramas de *16 bits* enviadas por el bus SPI (MSB primero). Cada trama consta de 8 bits para la dirección/comando y 8 bits para los datos:
+
+| Bits | Contenido |
+| :--- | :--- |
+| *D15 – D12* | Sin uso (don't care, normalmente 0000) |
+| *D11 – D8* | *Dirección del Registro (Comando)* (4 bits) |
+| *D7 – D0* | *Dato / Valor asignado* (8 bits) |
+
+---
+### Tabla de Registros
+
+| Dirección (Hex) | Nombre | Descripción y Valores |
+| :--- | :--- | :--- |
+| 0x00 | *No-Op* | No realiza ninguna acción. Se usa para pasar datos a través de los chips en conexiones en cascada. |
+| 0x01 – 0x08 | *Digit 0 – 7* | Datos de los LEDs (filas/columnas según la matriz). Cada bit del dato (D0-D7) enciende (1) o apaga (0) un LED. |
+| 0x09 | *Decode Mode* | 0x00: Sin decodificación (control directo bit a bit para matrices de LEDs).<br>0xFF: Decodificación Code B (para displays de 7 segmentos). |
+| 0x0A | *Intensity* | Control del brillo por PWM interno.<br>Valores desde 0x00 (mínimo) hasta 0x0F (máxima intensidad, 15/16). |
+| 0x0B | *Scan Limit* | Define cuántas posiciones/filas están activas (de 1 a 8).<br>0x07: Muestra las 8 filas completas (necesario para matrices $8\times8$). |
+| 0x0C | *Shutdown* | Encendido / Modo de bajo consumo.<br>0x00: Apagado (conserva datos en RAM).<br>0x01: Funcionamiento normal. |
+| 0x0F | *Display Test* | Modo de prueba.<br>0x00: Normal.<br>0x01: Enciende *todos* los LEDs al máximo brillo sin borrar la RAM. |
+
+---
+### Secuencia de Inicialización Recomendada
+Antes de enviar gráficos a la matriz, se debe ejecutar la siguiente secuencia de configuración enviando los comandos correspondientes:
+1. *0x0C 0x00* — Entrar en Shutdown (apagar matriz mientras se configura).
+2. *0x0F 0x00* — Desactivar Display Test.
+3. *0x09 0x00* — Desactivar Decode Mode (modo mapa de bits/matriz).
+4. *0x0B 0x07* — Activar las 8 filas (Scan Limit en 8).
+5. *0x0A 0x04* — Configurar nivel de brillo inicial moderado.
+6. *0x01 a 0x08 con 0x00* — Limpiar memoria VRAM (escribir ceros en todas las filas).
+7. *0x0C 0x01* — Salir de Shutdown (encender pantalla).
+```
+
 ### Referencia técnica
 
 - [Analog Devices, MAX7219/MAX7221 datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/MAX7219-MAX7221.pdf): registros, temporización, conexión en cascada y condiciones eléctricas. Comprueba también la documentación específica del módulo utilizado.
