@@ -161,7 +161,7 @@ función configurar(registro, dato):
 - Dimensiona la fuente y el cableado para el consumo de los módulos y sus LED; ajusta la intensidad y la resistencia de configuración según la documentación del hardware.
 
 ## 9. Comandos 
-`` 
+
 ```
 ## 📋 Comandos y Registros del MAX7219
 El *MAX7219* se controla mediante tramas de *16 bits* enviadas por el bus SPI (MSB primero). Cada trama consta de 8 bits para la dirección/comando y 8 bits para los datos:
