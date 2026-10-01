@@ -162,40 +162,76 @@ función configurar(registro, dato):
 
 ## 9. Comandos 
 
-```
-## 📋 Comandos y Registros del MAX7219
-El *MAX7219* se controla mediante tramas de *16 bits* enviadas por el bus SPI (MSB primero). Cada trama consta de 8 bits para la dirección/comando y 8 bits para los datos:
+# Guía de Comunicación FPGA - MAX7219
 
-| Bits | Contenido |
-| :--- | :--- |
-| *D15 – D12* | Sin uso (don't care, normalmente 0000) |
-| *D11 – D8* | *Dirección del Registro (Comando)* (4 bits) |
-| *D7 – D0* | *Dato / Valor asignado* (8 bits) |
+Este documento explica la estructura de tramas, comandos y el protocolo de comunicación serie para controlar matrices de LEDs (8x8) o displays de 7 segmentos con el chip MAX7219 desde una FPGA.
 
 ---
-### Tabla de Registros
 
-| Dirección (Hex) | Nombre | Descripción y Valores |
-| :--- | :--- | :--- |
-| 0x00 | *No-Op* | No realiza ninguna acción. Se usa para pasar datos a través de los chips en conexiones en cascada. |
-| 0x01 – 0x08 | *Digit 0 – 7* | Datos de los LEDs (filas/columnas según la matriz). Cada bit del dato (D0-D7) enciende (1) o apaga (0) un LED. |
-| 0x09 | *Decode Mode* | 0x00: Sin decodificación (control directo bit a bit para matrices de LEDs).<br>0xFF: Decodificación Code B (para displays de 7 segmentos). |
-| 0x0A | *Intensity* | Control del brillo por PWM interno.<br>Valores desde 0x00 (mínimo) hasta 0x0F (máxima intensidad, 15/16). |
-| 0x0B | *Scan Limit* | Define cuántas posiciones/filas están activas (de 1 a 8).<br>0x07: Muestra las 8 filas completas (necesario para matrices $8\times8$). |
-| 0x0C | *Shutdown* | Encendido / Modo de bajo consumo.<br>0x00: Apagado (conserva datos en RAM).<br>0x01: Funcionamiento normal. |
-| 0x0F | *Display Test* | Modo de prueba.<br>0x00: Normal.<br>0x01: Enciende *todos* los LEDs al máximo brillo sin borrar la RAM. |
+## 1. La Regla de Oro: El Sándwich de 16 Bits
+
+Toda información que la FPGA envía al MAX7219 debe ir agrupada obligatoriamente en un **paquete serie de 16 bits** (2 bytes).
+
+### Estructura Binaria
+* **Bits [15..12]:** Relleno (`0000`)
+* **Bits [11..8]:** Dirección del Registro / Comando (4 bits)
+* **Bits [7..0]:** Dato / Configuración / Patrón de LEDs (8 bits / 1 byte)
+
+### Estructura Hexadecimal
+```text
+Trama Hexadecimal = 0x + [Relleno: 0] + [Comando: 1 Hex] + [Dato: 2 Hex]
+Ejemplo: 0x0A07
+```
 
 ---
-### Secuencia de Inicialización Recomendada
-Antes de enviar gráficos a la matriz, se debe ejecutar la siguiente secuencia de configuración enviando los comandos correspondientes:
-1. *0x0C 0x00* — Entrar en Shutdown (apagar matriz mientras se configura).
-2. *0x0F 0x00* — Desactivar Display Test.
-3. *0x09 0x00* — Desactivar Decode Mode (modo mapa de bits/matriz).
-4. *0x0B 0x07* — Activar las 8 filas (Scan Limit en 8).
-5. *0x0A 0x04* — Configurar nivel de brillo inicial moderado.
-6. *0x01 a 0x08 con 0x00* — Limpiar memoria VRAM (escribir ceros en todas las filas).
-7. *0x0C 0x01* — Salir de Shutdown (encender pantalla).
+
+## 2. Tabla de Comandos Principales
+
+| Dirección Hex (`D11..D8`) | Nombre del Registro | Descripción | Valores Típicos / Uso |
+| :--- | :--- | :--- | :--- |
+| `0x0` | **No-Op** | No operación | Se usa para encadenar matrices en cascada (Daisy Chain). |
+| `0x9` | **Decode Mode** | Modo de Decodificación | `0x00` = Sin decodificar (Matriz 8x8)<br>`0xFF` = Decodificador BCD Code-B (7 Segmentos) |
+| `0xA` | **Intensity** | Control de Brillo (PWM) | `0x00` (Mínimo) a `0x0F` (Máximo) |
+| `0xB` | **Scan Limit** | Límite de Escaneo de Filas | `0x07` = Escanea las 8 filas (0 a 7) |
+| `0xC` | **Shutdown** | Encendido / Apagado | `0x00` = Modo Reposo (Apagado)<br>`0x01` = Modo Normal (Encendido) |
+| `0xF` | **Display Test** | Prueba de Pantalla | `0x00` = Operación Normal<br>`0x01` = Modo Test (Enciende todos los LEDs) |
+
+---
+
+## 3. Ejemplos Concretos de Tramas
+
+### Ejemplo 1: Cambiar el Brillo (Intensity)
+* **Comando:** `0xA` (Brillo)
+* **Valor:** `0x07` (Nivel medio de brillo)
+* **Trama final:** `0x0A07` (`0000 1010 0000 0111`)
+
+### Ejemplo 2: Encender la Pantalla (Salir de Shutdown)
+* **Comando:** `0xC` (Shutdown)
+* **Valor:** `0x01` (Encender)
+* **Trama final:** `0x0C01` (`0000 1100 0000 0001`)
+
+### Ejemplo 3: Configurar el Modo de Decodificación
+* **Comando:** `0x9` (Decode Mode)
+* **Valor:** `0x00` (Modo directo para matriz 8x8)
+* **Trama final:** `0x0900` (`0000 1001 0000 0000`)
+
+---
+
+## 4. Secuencia de Inicialización y Envío desde la FPGA
+
+Para poner a funcionar el MAX7219, la FPGA debe transmitir los siguientes paquetes en orden:
+
+```text
+1º Paquete  -->  [ 0x0B07 ]  (Scan Limit: Usa las 8 filas completas)
+2º Paquete  -->  [ 0x0900 ]  (Decode Mode: Directo para Matriz de LEDs 8x8)
+3º Paquete  -->  [ 0x0A07 ]  (Intensity: Brillo configurado a nivel 7)
+4º Paquete  -->  [ 0x0C01 ]  (Shutdown: Activa el chip)
 ```
+
+### Proceso de Envío por Hardware (SPI Emulado):
+1. La FPGA baja la línea `CS` / `LOAD` a nivel bajo (`0`).
+2. Desplaza los **16 bits** uno a uno por la línea `DIN` enviando un pulso de reloj `CLK` por cada bit (el MAX7219 lee en el flanco de subida de `CLK`).
+3. Una vez transferidos los 16 bits, la FPGA sube `CS` / `LOAD` a nivel alto (`1`) para guardar el dato en el registro interno del MAX7219.
 
 ### Referencia técnica
 
