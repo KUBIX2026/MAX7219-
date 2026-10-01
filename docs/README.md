@@ -203,9 +203,11 @@ Se junta `0` + `C` + `01` = `0x0C01` (en binario: `0000 1100 0000 0001`).
 1. La Fila 1 es la dirección `1`.
 2. Se busca encender solo los LEDs del centro de esa fila, por ejemplo en binario `00111100` (que en hex es `3C`).
 
+```text
 Bit:    7   6   5   4   3   2   1   0
 Valor:  0   0   1   1   1   1   0   0
 LEDs:  [ ] [ ] [*] [*] [*] [*] [ ] [ ]
+```
 
 👉 **Trama completa**
 Juntas `0` + `1` + `3C` = `0x013C` (en binario: `0000 0001 0011 1100`).
