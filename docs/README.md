@@ -162,76 +162,62 @@ función configurar(registro, dato):
 
 ## 9. Comandos 
 
-# Guía de Comunicación FPGA - MAX7219
+Cualquier cosa que le quieras decir al MAX7219 se arma juntando la Dirección y el Valor:
 
-Este documento explica la estructura de tramas, comandos y el protocolo de comunicación serie para controlar matrices de LEDs (8x8) o displays de 7 segmentos con el chip MAX7219 desde una FPGA.
+Trama de 16 bits = [0000 (Relleno 4 bits)] + [Dirección del Comando (4 bits)] + [Valor / Configuración (8 bits / 1 byte)]
 
----
+Si lo ves en Hexadecimal (que es más fácil de leer porque cada dígito hex son 4 bits), la estructura es:
 
-## 1. La Regla de Oro: El Sándwich de 16 Bits
+Trama Hex = 0x + 0 + Comando + Valor (2 dígitos)
 
-Toda información que la FPGA envía al MAX7219 debe ir agrupada obligatoriamente en un **paquete serie de 16 bits** (2 bytes).
 
-### Estructura Binaria
-* **Bits [15..12]:** Relleno (`0000`)
-* **Bits [11..8]:** Dirección del Registro / Comando (4 bits)
-* **Bits [7..0]:** Dato / Configuración / Patrón de LEDs (8 bits / 1 byte)
+## 2. Tabla de Registros y Comandos Principales
 
-### Estructura Hexadecimal
-```text
-Trama Hexadecimal = 0x + [Relleno: 0] + [Comando: 1 Hex] + [Dato: 2 Hex]
-Ejemplo: 0x0A07
-```
-
----
-
-## 2. Tabla de Comandos Principales
-
-| Dirección Hex (`D11..D8`) | Nombre del Registro | Descripción | Valores Típicos / Uso |
+| Dirección Hex (`D11..D8`) | Nombre del Registro | Descripción / Función | Valores Típicos / Configuración |
 | :--- | :--- | :--- | :--- |
-| `0x0` | **No-Op** | No operación | Se usa para encadenar matrices en cascada (Daisy Chain). |
-| `0x9` | **Decode Mode** | Modo de Decodificación | `0x00` = Sin decodificar (Matriz 8x8)<br>`0xFF` = Decodificador BCD Code-B (7 Segmentos) |
-| `0xA` | **Intensity** | Control de Brillo (PWM) | `0x00` (Mínimo) a `0x0F` (Máximo) |
-| `0xB` | **Scan Limit** | Límite de Escaneo de Filas | `0x07` = Escanea las 8 filas (0 a 7) |
+| `0x0` | **No-Op** | No Operación | Se usa para encadenar matrices en cascada (Daisy Chain). |
+| `0x9` | **Decode Mode** | Modo de Decodificación | `0x00` = Sin decodificar (Matriz de LEDs 8x8)<br>`0xFF` = Decodificador BCD Code-B (7 Segmentos) |
+| `0xA` | **Intensity** | Control de Brillo (PWM) | `0x00` (Brillo Mínimo) a `0x0F` (Brillo Máximo) |
+| `0xB` | **Scan Limit** | Límite de Escaneo de Filas | `0x07` = Escanea las 8 filas/dígitos completos (0 a 7) |
 | `0xC` | **Shutdown** | Encendido / Apagado | `0x00` = Modo Reposo (Apagado)<br>`0x01` = Modo Normal (Encendido) |
-| `0xF` | **Display Test** | Prueba de Pantalla | `0x00` = Operación Normal<br>`0x01` = Modo Test (Enciende todos los LEDs) |
+| `0xF` | **Display Test** | Prueba de Pantalla | `0x00` = Operación Normal<br>`0x01` = Modo Test (Enciende todos los LEDs al máximo) |
 
----
 
-## 3. Ejemplos Concretos de Tramas
+## 3. Ejemplos Concretos: ¿Qué pones exactamente?
 
-### Ejemplo 1: Cambiar el Brillo (Intensity)
-* **Comando:** `0xA` (Brillo)
-* **Valor:** `0x07` (Nivel medio de brillo)
-* **Trama final:** `0x0A07` (`0000 1010 0000 0111`)
+### Ejemplo 1: Quieres cambiar el Brillo
+1. El comando de brillo es el registro `A` (en binario `1010`).
+2. Quieres poner un brillo medio, por ejemplo nivel `7` (en binario `00000111`, en hex `07`).
 
-### Ejemplo 2: Encender la Pantalla (Salir de Shutdown)
-* **Comando:** `0xC` (Shutdown)
-* **Valor:** `0x01` (Encender)
-* **Trama final:** `0x0C01` (`0000 1100 0000 0001`)
+👉 **¿Qué pones en la trama completa?**
+Juntas `0` + `A` + `07` = `0x0A07` (o en binario: `0000 1010 0000 0111`).
 
-### Ejemplo 3: Configurar el Modo de Decodificación
-* **Comando:** `0x9` (Decode Mode)
-* **Valor:** `0x00` (Modo directo para matriz 8x8)
-* **Trama final:** `0x0900` (`0000 1001 0000 0000`)
+### Ejemplo 2: Quieres Encender la pantalla (Salir de Shutdown)
+1. El comando de Shutdown es el registro `C`.
+2. Para encenderlo, el valor que exige el chip es un `1` (en hex `01`).
 
----
+👉 **¿Qué pones en la trama completa?**
+Juntas `0` + `C` + `01` = `0x0C01` (en binario: `0000 1100 0000 0001`).
 
-## 4. Secuencia de Inicialización y Envío desde la FPGA
+### Ejemplo 3: Quieres poner píxeles en la Fila 1
+1. La Fila 1 es la dirección `1`.
+2. Quieres encender solo los LEDs del centro de esa fila, por ejemplo en binario `00111100` (que en hex es `3C`).
 
-Para poner a funcionar el MAX7219, la FPGA debe transmitir los siguientes paquetes en orden:
+👉 **¿Qué pones en la trama completa?**
+Juntas `0` + `1` + `3C` = `0x013C` (en binario: `0000 0001 0011 1100`).
 
-```text
-1º Paquete  -->  [ 0x0B07 ]  (Scan Limit: Usa las 8 filas completas)
-2º Paquete  -->  [ 0x0900 ]  (Decode Mode: Directo para Matriz de LEDs 8x8)
-3º Paquete  -->  [ 0x0A07 ]  (Intensity: Brillo configurado a nivel 7)
-4º Paquete  -->  [ 0x0C01 ]  (Shutdown: Activa el chip)
-```
 
-### Proceso de Envío por Hardware (SPI Emulado):
-1. La FPGA baja la línea `CS` / `LOAD` a nivel bajo (`0`).
-2. Desplaza los **16 bits** uno a uno por la línea `DIN` enviando un pulso de reloj `CLK` por cada bit (el MAX7219 lee en el flanco de subida de `CLK`).
-3. Una vez transferidos los 16 bits, la FPGA sube `CS` / `LOAD` a nivel alto (`1`) para guardar el dato en el registro interno del MAX7219.
+## 4. Resumen Visual de lo que la FPGA Envía al Chip
+
+Cuando la FPGA toma el control, va escupiendo paquetes de 16 bits uno tras otro para configurar todo:
+
+1º Paquete  -->  [ 0x0B07 ]  (Le dice: "Usa las 8 filas completas")
+2º Paquete  -->  [ 0x0900 ]  (Le dice: "No uses modo números, es una matriz de LEDs")
+3º Paquete  -->  [ 0x0A07 ]  (Le dice: "Ajusta el brillo al nivel 7")
+4º Paquete  -->  [ 0x0C01 ]  (Le dice: "¡Despierta y enciende la pantalla!")
+5º Paquete  -->  [ 0x0181 ]  (Le dice: "En la Fila 1, enciende el primer y último LED")
+
+Cada uno de esos bloques de entre corchetes es un envío completo donde la FPGA baja CS/LOAD, envía los 16 unos y ceros por el cable DIN dando 16 pulsos de reloj CLK, y vuelve a subir CS/LOAD.
 
 ### Referencia técnica
 
