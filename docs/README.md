@@ -162,62 +162,56 @@ función configurar(registro, dato):
 
 ## 9. Comandos 
 
-Cualquier cosa que le quieras decir al MAX7219 se arma juntando la Dirección y el Valor:
+La comunicacion con el MAX7219 se arma juntando la Dirección y el Valor:
 
 Trama de 16 bits = [0000 (Relleno 4 bits)] + [Dirección del Comando (4 bits)] + [Valor / Configuración (8 bits / 1 byte)]
 
-Si lo ves en Hexadecimal (que es más fácil de leer porque cada dígito hex son 4 bits), la estructura es:
+Viendolo en Hexadecimal (Recordando que cada dígito hex son 4 bits), la estructura es:
 
 Trama Hex = 0x + 0 + Comando + Valor (2 dígitos)
 
 
 ## 2. Tabla de Registros y Comandos Principales
 
-| Dirección Hex (`D11..D8`) | Nombre del Registro | Descripción / Función | Valores Típicos / Configuración |
+| Dirección Hex (`D11..D8`) | Nombre del Registro | Descripción Sencilla | Valores Típicos y Uso |
 | :--- | :--- | :--- | :--- |
-| `0x0` | **No-Op** | No Operación | Se usa para encadenar matrices en cascada (Daisy Chain). |
-| `0x9` | **Decode Mode** | Modo de Decodificación | `0x00` = Sin decodificar (Matriz de LEDs 8x8)<br>`0xFF` = Decodificador BCD Code-B (7 Segmentos) |
-| `0xA` | **Intensity** | Control de Brillo (PWM) | `0x00` (Brillo Mínimo) a `0x0F` (Brillo Máximo) |
-| `0xB` | **Scan Limit** | Límite de Escaneo de Filas | `0x07` = Escanea las 8 filas/dígitos completos (0 a 7) |
-| `0xC` | **Shutdown** | Encendido / Apagado | `0x00` = Modo Reposo (Apagado)<br>`0x01` = Modo Normal (Encendido) |
-| `0xF` | **Display Test** | Prueba de Pantalla | `0x00` = Operación Normal<br>`0x01` = Modo Test (Enciende todos los LEDs al máximo) |
+| `0x0` | **No-Op** | **Modo "Pasar de largo":** No hace ningún cambio. Se usa cuando hay varias pantallas conectadas en cadena para enviar datos a una pantalla lejana sin alterar las que están en medio. | `0x00` (Se usa cuando no se desea modificar la matriz actual). |
+| `0x9` | **Decode Mode** | **Modo de Interpretación:** Define si el chip controla los LEDs uno por uno (modo gráfico) o si convierte números automáticamente para mostrarlos en displays de 7 segmentos. | `0x00` = Modo directo para matriz de LEDs 8x8.<br>`0xFF` = Modo automático para displays de 7 segmentos. |
+| `0xA` | **Intensity** | **Control de Brillo:** Cambia la intensidad de la luz de los LEDs digitalmente sin necesidad de modificar componentes físicos en la tarjeta. | `0x00` = Brillo mínimo.<br>`0x07` = Brillo medio.<br>`0x0F` = Brillo máximo. |
+| `0xB` | **Scan Limit** | **Cantidad de Filas Activas:** Indica cuántas filas de la pantalla se van a encender. En matrices de 8x8 debe configurarse siempre en 8 filas para evitar sobrecargar los LEDs. | `0x07` = Activa las 8 filas de la matriz (filas 0 a 7). |
+| `0xC` | **Shutdown** | **Interruptor Apagado / Encendido:** Apaga la pantalla para ahorrar energía sin borrar el dibujo o texto guardado en la memoria. Al volver a encender, la imagen reaparece. | `0x00` = Pantalla apagada (modo ahorro).<br>`0x01` = Pantalla encendida (modo normal). |
+| `0xF` | **Display Test** | **Prueba de Funcionamiento:** Enciende absolutamente todos los LEDs de la pantalla al mismo tiempo para comprobar si hay algún LED dañado o mal soldado. | `0x00` = Funcionamiento normal.<br>`0x01` = Modo de prueba (enciende todo). |
 
 
-## 3. Ejemplos Concretos: ¿Qué pones exactamente?
+## 3. Ejemplos 
 
-### Ejemplo 1: Quieres cambiar el Brillo
+### Ejemplo 1: Cambio de Brillo
 1. El comando de brillo es el registro `A` (en binario `1010`).
-2. Quieres poner un brillo medio, por ejemplo nivel `7` (en binario `00000111`, en hex `07`).
+2. Para poner un brillo medio, por ejemplo nivel `7` (en binario `00000111`, en hex `07`).
 
-👉 **¿Qué pones en la trama completa?**
-Juntas `0` + `A` + `07` = `0x0A07` (o en binario: `0000 1010 0000 0111`).
+👉 **Trama completa**
+Se junta `0` + `A` + `07` = `0x0A07` (en binario: `0000 1010 0000 0111`).
 
-### Ejemplo 2: Quieres Encender la pantalla (Salir de Shutdown)
+### Ejemplo 2: Encender la pantalla (Salir de Shutdown)
 1. El comando de Shutdown es el registro `C`.
 2. Para encenderlo, el valor que exige el chip es un `1` (en hex `01`).
 
-👉 **¿Qué pones en la trama completa?**
-Juntas `0` + `C` + `01` = `0x0C01` (en binario: `0000 1100 0000 0001`).
+👉 **Trama completa**
+Se junta `0` + `C` + `01` = `0x0C01` (en binario: `0000 1100 0000 0001`).
 
-### Ejemplo 3: Quieres poner píxeles en la Fila 1
+### Ejemplo 3: Poner píxeles en la Fila 1
 1. La Fila 1 es la dirección `1`.
-2. Quieres encender solo los LEDs del centro de esa fila, por ejemplo en binario `00111100` (que en hex es `3C`).
+2. Se busca encender solo los LEDs del centro de esa fila, por ejemplo en binario `00111100` (que en hex es `3C`).
 
-👉 **¿Qué pones en la trama completa?**
+Bit:    7   6   5   4   3   2   1   0
+Valor:  0   0   1   1   1   1   0   0
+LEDs:  [ ] [ ] [*] [*] [*] [*] [ ] [ ]
+
+👉 **Trama completa**
 Juntas `0` + `1` + `3C` = `0x013C` (en binario: `0000 0001 0011 1100`).
 
 
-## 4. Resumen Visual de lo que la FPGA Envía al Chip
 
-Cuando la FPGA toma el control, va escupiendo paquetes de 16 bits uno tras otro para configurar todo:
-
-1º Paquete  -->  [ 0x0B07 ]  (Le dice: "Usa las 8 filas completas")
-2º Paquete  -->  [ 0x0900 ]  (Le dice: "No uses modo números, es una matriz de LEDs")
-3º Paquete  -->  [ 0x0A07 ]  (Le dice: "Ajusta el brillo al nivel 7")
-4º Paquete  -->  [ 0x0C01 ]  (Le dice: "¡Despierta y enciende la pantalla!")
-5º Paquete  -->  [ 0x0181 ]  (Le dice: "En la Fila 1, enciende el primer y último LED")
-
-Cada uno de esos bloques de entre corchetes es un envío completo donde la FPGA baja CS/LOAD, envía los 16 unos y ceros por el cable DIN dando 16 pulsos de reloj CLK, y vuelve a subir CS/LOAD.
 
 ### Referencia técnica
 
