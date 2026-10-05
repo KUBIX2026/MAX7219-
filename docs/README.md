@@ -35,7 +35,7 @@ Este documento explica cómo enviar indicadores de falla desde un microcontrolad
 > * **Solución:** Se debe conectar un **Conversor de Niveles Lógicos (Logic Level Shifter)** en las líneas unidireccionales del bus SPI (`DIN`, `CLK` y `CS/LOAD`) para elevar las señales de 3.3V a 5V. 
 
 
-## 2. Temporización de la transferencia
+## 2. Temporización
 
 El cronograma se incluye en la [lámina general de la cascada](#4-cuatro-módulos-en-cascada).
 
