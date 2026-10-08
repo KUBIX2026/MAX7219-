@@ -3,6 +3,8 @@
 Este documento explica cómo enviar indicadores de falla desde un microcontrolador o FPGA a una pantalla formada por **cuatro módulos MAX7219 en cascada** (habitualmente 32 × 8 píxeles). Incluye el cableado, el formato de los comandos, la inicialización y un ejemplo de actualización y parpadeo.
 
 > **Alcance:** el MAX7219 emplea una interfaz serie síncrona de tres señales, compatible con una configuración SPI habitual. No dispone de lectura MISO. Las posiciones visibles dependen de la orientación y el cableado del módulo; conviene comprobarlas con un patrón de prueba.
+>
+> ![Conexión del microcontrolador al MAX7219](assets/ejemplo_carros_max.png)
 
 ## Índice
 
