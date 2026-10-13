@@ -168,22 +168,27 @@ Guarda el patrón de cada indicador como ocho grupos de cuatro bytes: `bitmap[po
 
 ```mermaid
 graph TD
-    A([Solicitud: Activar Indicador]) --> B["Inicialización MAX7219 via SPI<br>- CS = LOW<br>- Enviar Registros: Shutdown, Decode, ScanLimit, Intensity<br>- CS = HIGH"]
+    A([Inicio / Reset Hardware]) --> B["Inicializar los 4 MAX7219 via SPI<br>- Shutdown = 0x01 (Encendido)<br>- Scan Limit = 0x07 (8 filas)<br>- Decode Mode = 0x00 (Matriz directa)<br>- Intensity = 0x04 (Brillo)"]
     
-    B --> C["Carga de Mapa de Píxeles<br>Cargar patrón ERR o X en buffer de matriz"]
+    B --> C["Identificar Juego / Modo Activo<br>(Pong, Carros, etc.)"]
     
-    C --> D["FASE 1: Mostrar Falla<br>- CS = LOW<br>- Enviar 64 bits/fila via DIN/CLK<br>- CS = HIGH Latch<br>- Esperar 500ms"]
+    C --> D["Esperar Evento o Cambio de Estado del Juego<br>(Ej: Gol, Cambio de Puntos, Nivel Gasolina, Marcha)"]
     
-    D --> E["FASE 2: Apagar Pantalla<br>- CS = LOW<br>- Enviar 0x00 a todas las filas<br>- CS = HIGH Latch<br>- Esperar 500ms"]
+    D --> E{"¿Hay actualización de estado?"}
     
-    E --> F{"¿El error persiste?"}
+    E -- No --> D
     
-    F -- si --> D
-    F -- No --> G["Limpiar Pantalla<br>- Datos = 0x00<br>- CS = HIGH"]
+    E -- Sí --> F["Mapear Sprites / Patrones de Píxeles<br>Cargar en Framebuffer (32 x 8 bits)"]
     
-    G --> H([Retornar al Flujo Principal])
+    F --> G["Para cada Fila (Registros 0x01 a 0x08):<br>1. Bajar CS/LOAD = LOW<br>2. Transmitir 64 bits serie via DIN/CLK (16 bits x 4 chips)<br>3. Subir CS/LOAD = HIGH (Latch de datos)"]
+    
+    G --> H{"¿El evento requiere animación / parpadeo?"}
+    
+    H -- Sí --> I["Esperar temporizador de cuadro (ej: 250ms / 500ms)<br>y actualizar siguiente frame"]
+    I --> F
+    
+    H -- No --> D
 ```
-
 La limpieza requiere escribir `0x00` en **los ocho registros de cada módulo**. Subir `LOAD` no borra ni alterna por sí solo los LED. Para evitar esperas bloqueantes, un sistema que atienda otras tareas puede alternar el bitmap y la pantalla vacía con un temporizador de 500 ms.
 
 ## 7. Ejemplo de implementación
