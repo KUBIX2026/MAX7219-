@@ -35,6 +35,24 @@ Este sistema de visualización está diseñado para mostrar información dinámi
 | **Consumo Máximo de Corriente** | ≈ 320 mA – 1 A | Varía según intensidad y porcentaje de píxeles encendidos. |
 | **Interfaz de Comunicación** | Serie síncrona tipo SPI (3 hilos) | `DIN`, `CLK`, `CS/LOAD`. |
 
+
+![Conexión del microcontrolador al MAX7219](docs/assets/conexion-spi.png)
+
+| Señal del controlador | Pin del primer MAX7219 | Función |
+| --- | --- | --- |
+| `MOSI` | `DIN` | Datos de entrada, bit más significativo primero. |
+| `SCK` | `CLK` | Reloj; el chip toma `DIN` en el flanco ascendente. |
+| GPIO de salida | `CS` / `LOAD` | En bajo se desplazan bits; el flanco ascendente carga los registros. |
+| Alimentación | `VCC`, `GND` | Alimentación y tierra común según el módulo utilizado. |
+
+`DOUT` del primer chip se conecta a `DIN` del siguiente. `CLK` y `CS/LOAD` se distribuyen a todos los chips. No se conecta `MISO` porque el MAX7219 no devuelve datos. Comprueba los niveles lógicos admitidos por tu placa y el módulo: un controlador de 3,3 V no debe suponerse compatible con una entrada alimentada a 5 V sin revisar sus especificaciones.
+
+> **Nota sobre niveles de voltaje (3.3V vs 5V)**
+>
+> * **Conflicto de Voltajes:** Los pines de I/O de la FPGA operan con lógica de 3.3V LVCMOS, mientras que el controlador MAX7219 se alimenta a 5V.
+> * **Umbral de Reconocimiento:** El MAX7219 requiere un voltaje de entrada alto ($V_{IH}$) de al menos **3.5V** para garantizar la lectura de un `'1'` lógico. Enviar señales directamente a 3.3V desde la FPGA puede provocar instabilidad, pérdida de datos o pantallas que no responden.
+> * **Solución:** Se debe conectar un **Conversor de Niveles Lógicos (Logic Level Shifter)** en las líneas unidireccionales del bus SPI (`DIN`, `CLK` y `CS/LOAD`) para elevar las señales de 3.3V a 5V. 
+
 ---
 
 # 2. Diagrama de Caja Negra e Interfaz de Señales
