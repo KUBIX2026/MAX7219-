@@ -17,24 +17,101 @@ Este documento explica cómo enviar indicadores de falla desde un microcontrolad
 7. [Ejemplo de implementación](#7-ejemplo-de-implementación)
 8. [Comprobaciones y límites](#8-comprobaciones-y-límites)
 
-## 1. Conexión y señales
+# 1. Introducción y Especificaciones del Hardware
 
-![Conexión del microcontrolador al MAX7219](docs/assets/conexion-spi.png)
+Este sistema de visualización está diseñado para mostrar información dinámica y telemetría de juegos en tiempo real (marcador y animaciones de "GOL!" en Pong, barras de combustible y estado en juegos de carreras). La pantalla consiste en **cuatro módulos de matriz LED de 8 × 8 encadenados en cascada** (resolución total de 32 × 8 píxeles, monocromática en color rojo), controlados centralmente por el circuito integrado **MAX7219** mediante un bus serie síncrono.
 
-| Señal del controlador | Pin del primer MAX7219 | Función |
+## Ficha Técnica del Módulo
+
+| Parámetro | Especificación | Observaciones |
 | --- | --- | --- |
-| `MOSI` | `DIN` | Datos de entrada, bit más significativo primero. |
-| `SCK` | `CLK` | Reloj; el chip toma `DIN` en el flanco ascendente. |
-| GPIO de salida | `CS` / `LOAD` | En bajo se desplazan bits; el flanco ascendente carga los registros. |
-| Alimentación | `VCC`, `GND` | Alimentación y tierra común según el módulo utilizado. |
+| **Configuración de Píxeles** | 32 × 8 LEDs (256 puntos) | 4 matrices de 8 × 8 cátodo común en cascada. |
+| **Color de Emisión** | Rojo monocromático | Longitud de onda típica ≈ 620–630 nm. |
+| **Controlador de Display** | MAX7219 (1 por matriz de 8 × 8) | Maneja el multiplexado dinámico por hardware. |
+| **Tensión de Alimentación ($V_{CC}$)** | 5.0 V DC | Requerido por el chip MAX7219 para brillo nominal. |
+| **Nivel Lógico de Entrada ($V_{IH}$)** | Mínimo 3.5 V | Requiere adaptación desde FPGA de 3.3 V. |
+| **Consumo Máximo de Corriente** | ≈ 320 mA – 1 A | Varía según intensidad y porcentaje de píxeles encendidos. |
+| **Interfaz de Comunicación** | Serie síncrona tipo SPI (3 hilos) | `DIN`, `CLK`, `CS/LOAD`. |
 
-`DOUT` del primer chip se conecta a `DIN` del siguiente. `CLK` y `CS/LOAD` se distribuyen a todos los chips. No se conecta `MISO` porque el MAX7219 no devuelve datos. Comprueba los niveles lógicos admitidos por tu placa y el módulo: un controlador de 3,3 V no debe suponerse compatible con una entrada alimentada a 5 V sin revisar sus especificaciones.
+---
 
-> **Nota sobre niveles de voltaje (3.3V vs 5V)**
->
-> * **Conflicto de Voltajes:** Los pines de I/O de la FPGA operan con lógica de 3.3V LVCMOS, mientras que el controlador MAX7219 se alimenta a 5V.
-> * **Umbral de Reconocimiento:** El MAX7219 requiere un voltaje de entrada alto ($V_{IH}$) de al menos **3.5V** para garantizar la lectura de un `'1'` lógico. Enviar señales directamente a 3.3V desde la FPGA puede provocar instabilidad, pérdida de datos o pantallas que no responden.
-> * **Solución:** Se debe conectar un **Conversor de Niveles Lógicos (Logic Level Shifter)** en las líneas unidireccionales del bus SPI (`DIN`, `CLK` y `CS/LOAD`) para elevar las señales de 3.3V a 5V. 
+# 2. Diagrama de Caja Negra e Interfaz de Señales
+
+## Diagrama de Caja Negra (Black Box Diagram)
+
+El controlador (FPGA o Microcontrolador) actúa como maestro del bus SPI. Dado que la lógica del controlador opera a 3.3 V (LVCMOS) y los módulos MAX7219 requieren un umbral de alto de al menos 3.5 V cuando se alimentan con 5.0 V, las señales se canalizan a través de un **conversor de niveles lógicos (Logic Level Shifter)**.
+
+```text
++-----------------------------------------------------------------------------------+
+|                                  SISTEMA DE CONTROL                               |
+|                                                                                   |
+|  +-------------------+       Señales de Juego      +--------------------------+   |
+|  | Lógica del Juego  |---------------------------->| Controlador SPI MAX7219  |   |
+|  | (Pong / Carros)   |  (Puntos, Gol, Gasolina)   | (FSM / Master SPI FPGA)  |   |
+|  +-------------------+                             +--------------------------+   |
+|                                                                 |                 |
++-----------------------------------------------------------------|-----------------+
+                                                                  |  Lógica 3.3V
+                                                                  v
+                                              +----------------------------------------+
+                                              | Conversor de Niveles Lógicos (Shifter) |
+                                              |            (3.3V ----> 5.0V)           |
+                                              +----------------------------------------+
+                                                                  |
+                                                                  |  Lógica 5.0V
+                                                                  v
+                                              +----------------------------------------+
+                                              |   MATRIZ DE LEDs 32x8 (MAX7219 x4)     |
+                                              |   [Módu 0] [Módu 1] [Módu 2] [Módu 3]  |
+                                              +----------------------------------------+
+```
+
+```mermaid
+graph LR
+    subgraph FPGA_MCU ["Controlador Principal (3.3V LVCMOS)"]
+        A["Lógica del Juego<br>(Pong / Carros)"] -->|Eventos| B["Módulo Maestro SPI"]
+        B -->|MOSI_3V3| C1["DIN (3.3V)"]
+        B -->|SCK_3V3| C2["CLK (3.3V)"]
+        B -->|CS_3V3| C3["CS/LOAD (3.3V)"]
+    end
+
+    subgraph Level_Shifter ["Logic Level Shifter"]
+        C1 -->|Elevación| D1["DIN (5.0V)"]
+        C2 -->|Elevación| D2["CLK (5.0V)"]
+        C3 -->|Elevación| D3["CS/LOAD (5.0V)"]
+    end
+
+    subgraph Display_Array ["Pantalla Cascada 32x8 (5.0V VCC)"]
+        D1 --> M1["MAX7219 #0<br>(Píxeles 0-7)"]
+        D2 --> M1
+        D2 --> M2["MAX7219 #1<br>(Píxeles 8-15)"]
+        D2 --> M3["MAX7219 #2<br>(Píxeles 16-23)"]
+        D2 --> M4["MAX7219 #3<br>(Píxeles 24-31)"]
+        D3 --> M1
+        D3 --> M2
+        D3 --> M3
+        D3 --> M4
+        M1 -->|DOUT -> DIN| M2
+        M2 -->|DOUT -> DIN| M3
+        M3 -->|DOUT -> DIN| M4
+    end
+```
+
+## Interfaz y Conexión de Señales
+
+| Señal Controlador | Pin Shifter (IN) | Pin Shifter (OUT) | Pin Primer MAX7219 | Dirección | Función y Descripción |
+| --- | --- | --- | --- | --- | --- |
+| `MOSI` | `A1` (3.3 V) | `B1` (5.0 V) | `DIN` | Entrada | Datos serie enviados bit a bit, MSB primero. |
+| `SCK` | `A2` (3.3 V) | `B2` (5.0 V) | `CLK` | Entrada | Reloj serie. Captura `DIN` en flanco de subida. |
+| `GPIO_CS` | `A3` (3.3 V) | `B3` (5.0 V) | `CS` / `LOAD` | Entrada | Habilita carga. En alto transfiere el registro al display. |
+| `+3.3V` | `VCCA` | -- | -- | Alimentación | Referencia lógica del lado del controlador. |
+| `+5.0V` | `VCCB` | -- | `VCC` | Alimentación | Alimentación principal de los MAX7219 y matriz de LEDs. |
+| `GND` | `GND` | `GND` | `GND` | Salida/Ref | Tierra común de todo el sistema. |
+
+> **Nota sobre el Adaptador de Nivel Lógico (Level Shifter):**
+> * **Incompatibilidad de Voltajes:** La lógica FPGA opera a 3.3 V LVCMOS. La especificación eléctrica del fabricante para el MAX7219 exige un voltaje de entrada alto ($V_{IH}$) mínimo de 3.5 V a $V_{CC} = 5.0\text{ V}$.
+> * **Riesgo:** Conectar las líneas SPI directamente a 3.3 V puede resultar en comportamientos erráticos, pérdida de tramas de datos o falla total del encendido de los LEDs.
+> * **Solución Implementada:** Se coloca un convertidor bidireccional/unidireccional de nivel lógico de alta velocidad en las líneas `DIN`, `CLK` y `CS/LOAD`.
 
 
 ## 2. Temporización
