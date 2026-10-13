@@ -40,7 +40,6 @@ Este sistema de visualización está diseñado para mostrar información dinámi
 ## Diagrama de Caja Negra (Black Box Diagram)
 
 El controlador (FPGA o Microcontrolador) actúa como maestro del bus SPI. Dado que la lógica del controlador opera a 3.3 V (LVCMOS) y los módulos MAX7219 requieren un umbral de alto de al menos 3.5 V cuando se alimentan con 5.0 V, las señales se canalizan a través de un **conversor de niveles lógicos (Logic Level Shifter)**.
-## Diagrama de Caja Negra (Black Box Diagram)
 
 El sistema de visualización se abstrae como un módulo de control donde la lógica del juego y las señales de alimentación entran al controlador, el cual procesa la información y la proyecta en la matriz física de $32 \times 8$ LEDs.
 
