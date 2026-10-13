@@ -170,7 +170,7 @@ Guarda el patrón de cada indicador como ocho grupos de cuatro bytes: `bitmap[po
 graph TD
     A([Inicializar]) --> B["Inicializar los 4 MAX7219 via SPI<br>- Shutdown = 0x01 (Encendido)<br>- Scan Limit = 0x07 (8 filas)<br>- Decode Mode = 0x00 (Matriz directa)<br>- Intensity = 0x04 (Brillo)"]
     
-    B --> C["Identificar Juego / Modo Activo<br>(Pong, Carros, etc.)"]
+    B --> C["Identificar Juego<br>(Pong, Carros, etc.)"]
     
     C --> D["Esperar Evento o Cambio de Estado del Juego<br>(Ej: Gol, Cambio de Puntos, Nivel Gasolina, Marcha)"]
     
