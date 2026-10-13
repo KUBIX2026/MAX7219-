@@ -136,6 +136,18 @@ Cada pulso desplaza un bit a través de los chips. Para actualizar un registro e
 
 Para dibujar una pantalla completa de 8 posiciones hacen falta **ocho transferencias de 64 bits** (512 bits), una por registro `0x01` a `0x08`. Así, los 64 bits actualizan una posición de los cuatro módulos, no toda la imagen de 32 × 8. Si solo cambia un módulo, se puede enviar `0x00 0x00` (*no-op*) a los otros tres dentro de la misma transferencia.
 
+
+### Mapeo de Coordenadas y Framebuffer ($32 \times 8$)
+
+La pantalla completa se representa como una matriz de 32 columnas por 8 filas ($X \in [0, 31], Y \in [0, 7]$). Para encender un píxel en la posición global $(X, Y)$, el controlador calcula su ubicación en la memoria mediante:
+
+1. **Módulo Destino ($M$):** $M = \lfloor X / 8 \rfloor \quad (M \in \{0, 1, 2, 3\})$
+2. **Bit Relativo ($b$):** $b = 7 - (X \bmod 8)$
+3. **Registro / Fila ($R$):** $R = Y + 1 \quad (R \in \{0x01, \dots, 0x08\})$
+
+El *Framebuffer* en la FPGA se organiza como una matriz de `buffer[8][4]` bytes (32 bytes totales), donde cada byte controla 8 píxeles horizontales de un módulo.
+
+
 ## 5. Inicialización
 
 Tras encender el sistema, configura **cada chip**. Para ello, repite la misma palabra cuatro veces en cada transferencia de 64 bits:
