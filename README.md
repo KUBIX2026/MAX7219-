@@ -19,7 +19,7 @@ Este documento explica cómo enviar indicadores de falla desde un microcontrolad
 
 ## 1. Conexión y señales
 
-![Conexión del microcontrolador al MAX7219](assets/conexion-spi.png)
+![Conexión del microcontrolador al MAX7219](docs/assets/conexion-spi.png)
 
 | Señal del controlador | Pin del primer MAX7219 | Función |
 | --- | --- | --- |
