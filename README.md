@@ -182,7 +182,7 @@ graph TD
     
     F --> G["Para cada Fila (Registros 0x01 a 0x08):<br>1. Bajar CS/LOAD = LOW<br>2. Transmitir 64 bits serie via DIN/CLK (16 bits x 4 chips)<br>3. Subir CS/LOAD = HIGH (Latch de datos)"]
     
-    G --> H{"¿El evento requiere animación / parpadeo?"}
+    G --> H{"¿El evento requiere <br> animación / parpadeo?"}
     
     H -- Sí --> I["Esperar temporizador de cuadro (ej: 250ms / 500ms)<br>y actualizar siguiente frame"]
     I --> F
