@@ -13,7 +13,7 @@ Este documento explica la implementacion de una pantalla auxiliar a la consola d
 3. [Temporización](#3-Temporización)
 4. [Cuatro módulos en cascada](#4-cuatro-módulos-en-cascada)
 5. [Inicialización](#5-inicialización)
-6. [Mostrar y hacer parpadear una falla](#6-mostrar-y-hacer-parpadear-una-falla)
+6. [Mostrar y hacer parpadear una falla](#6-Mostrar-evntos-de-juego
 7. [Ejemplo de implementación](#7-ejemplo-de-implementación)
 8. [Comprobaciones y límites](#8-comprobaciones-y-límites)
 
@@ -162,7 +162,7 @@ Tras encender el sistema, configura **cada chip**. Para ello, repite la misma pa
 | 5 | `0x01`–`0x08` | `0x00` | Limpiar las ocho posiciones en los cuatro módulos. |
 | 6 | `0x0C` | `0x01` | Salir del modo de apagado. |
 
-## 6. Mostrar y hacer parpadear una falla
+## 6. Mostrar evntos de juego
 
 Guarda el patrón de cada indicador como ocho grupos de cuatro bytes: `bitmap[posición][módulo]`. La correspondencia entre el índice de módulo y su ubicación visible se determina en la prueba de montaje.
 
