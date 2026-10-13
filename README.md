@@ -59,7 +59,7 @@ graph LR
         S1["Matriz de LEDs Rojos<br>32 x 8 Píxeles (256 LEDs)"]
     end
 
-    E1 -->|Datos de Telemetría| CB
+    E1 -->|Indicadores juego| CB
     E2 -->|Sincronización y Carga| CB
     E3 -->|Energía| CB
     CB -->|Matriz Dinámica| S1
