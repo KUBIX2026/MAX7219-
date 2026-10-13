@@ -17,7 +17,7 @@ Este documento explica la implementacion de una pantalla auxiliar a la consola d
 7. [Ejemplo de implementación](#7-ejemplo-de-implementación)
 8. [Comprobaciones y límites](#8-comprobaciones-y-límites)
 
-actualizaaatataoajcjfidjcas
+
 
 # 1. Introducción y Especificaciones del Hardware
 
