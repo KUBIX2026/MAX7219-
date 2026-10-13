@@ -52,7 +52,7 @@ graph LR
     end
 
     subgraph BlackBox ["MÓDULO CONTROLADOR MAX7219 (Caja Negra)"]
-        CB["Controlador SPI + Level Shifter +<br>Cascada MAX7219"]
+        CB["Controlador SPI +<br> Level Shifter +<br> MAX7219"]
     end
 
     subgraph Salida ["Salida Física"]
