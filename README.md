@@ -52,7 +52,7 @@ Una configuración SPI habitual es **modo 0** (`CPOL=0`, `CPHA=0`), MSB primero.
 
 ## 3. Comando de 16 bits y registros
 
-![Formato del frame de 16 bits del MAX7219](assets/frame-16-bits.png)
+![Formato del frame de 16 bits del MAX7219](docs/assets/frame-16-bits.png)
 
 | Bits | Contenido |
 | --- | --- |
