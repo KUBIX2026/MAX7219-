@@ -40,61 +40,30 @@ Este sistema de visualización está diseñado para mostrar información dinámi
 ## Diagrama de Caja Negra (Black Box Diagram)
 
 El controlador (FPGA o Microcontrolador) actúa como maestro del bus SPI. Dado que la lógica del controlador opera a 3.3 V (LVCMOS) y los módulos MAX7219 requieren un umbral de alto de al menos 3.5 V cuando se alimentan con 5.0 V, las señales se canalizan a través de un **conversor de niveles lógicos (Logic Level Shifter)**.
+## Diagrama de Caja Negra (Black Box Diagram)
 
-```text
-+-----------------------------------------------------------------------------------+
-|                                  SISTEMA DE CONTROL                               |
-|                                                                                   |
-|  +-------------------+       Señales de Juego      +--------------------------+   |
-|  | Lógica del Juego  |---------------------------->| Controlador SPI MAX7219  |   |
-|  | (Pong / Carros)   |  (Puntos, Gol, Gasolina)   | (FSM / Master SPI FPGA)  |   |
-|  +-------------------+                             +--------------------------+   |
-|                                                                 |                 |
-+-----------------------------------------------------------------|-----------------+
-                                                                  |  Lógica 3.3V
-                                                                  v
-                                              +----------------------------------------+
-                                              | Conversor de Niveles Lógicos (Shifter) |
-                                              |            (3.3V ----> 5.0V)           |
-                                              +----------------------------------------+
-                                                                  |
-                                                                  |  Lógica 5.0V
-                                                                  v
-                                              +----------------------------------------+
-                                              |   MATRIZ DE LEDs 32x8 (MAX7219 x4)     |
-                                              |   [Módu 0] [Módu 1] [Módu 2] [Módu 3]  |
-                                              +----------------------------------------+
-```
+El sistema de visualización se abstrae como un módulo de control donde la lógica del juego y las señales de alimentación entran al controlador, el cual procesa la información y la proyecta en la matriz física de $32 \times 8$ LEDs.
 
 ```mermaid
 graph LR
-    subgraph FPGA_MCU ["Controlador Principal (3.3V LVCMOS)"]
-        A["Lógica del Juego<br>(Pong / Carros)"] -->|Eventos| B["Módulo Maestro SPI"]
-        B -->|MOSI_3V3| C1["DIN (3.3V)"]
-        B -->|SCK_3V3| C2["CLK (3.3V)"]
-        B -->|CS_3V3| C3["CS/LOAD (3.3V)"]
+    subgraph Entradas ["Entradas del Sistema"]
+        E1["Eventos de Juego<br>(Score, GOL!, Gasolina, Marcha)"]
+        E2["Reloj y Reset<br>(clk, rst)"]
+        E3["Líneas de Alimentación<br>(3.3V, 5.0V, GND)"]
     end
 
-    subgraph Level_Shifter ["Logic Level Shifter"]
-        C1 -->|Elevación| D1["DIN (5.0V)"]
-        C2 -->|Elevación| D2["CLK (5.0V)"]
-        C3 -->|Elevación| D3["CS/LOAD (5.0V)"]
+    subgraph BlackBox ["MÓDULO CONTROLADOR MAX7219 (Caja Negra)"]
+        CB["Controlador SPI + Level Shifter +<br>Cascada MAX7219"]
     end
 
-    subgraph Display_Array ["Pantalla Cascada 32x8 (5.0V VCC)"]
-        D1 --> M1["MAX7219 #0<br>(Píxeles 0-7)"]
-        D2 --> M1
-        D2 --> M2["MAX7219 #1<br>(Píxeles 8-15)"]
-        D2 --> M3["MAX7219 #2<br>(Píxeles 16-23)"]
-        D2 --> M4["MAX7219 #3<br>(Píxeles 24-31)"]
-        D3 --> M1
-        D3 --> M2
-        D3 --> M3
-        D3 --> M4
-        M1 -->|DOUT -> DIN| M2
-        M2 -->|DOUT -> DIN| M3
-        M3 -->|DOUT -> DIN| M4
+    subgraph Salida ["Salida Física"]
+        S1["Matriz de LEDs Rojos<br>32 x 8 Píxeles (256 LEDs)"]
     end
+
+    E1 -->|Datos de Telemetría| CB
+    E2 -->|Sincronización| CB
+    E3 -->|Energía| CB
+    CB -->|Matriz Dinámica| S1
 ```
 
 ## Interfaz y Conexión de Señales
