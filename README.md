@@ -168,7 +168,7 @@ Guarda el patrón de cada indicador como ocho grupos de cuatro bytes: `bitmap[po
 
 ```mermaid
 graph TD
-    A([Inicio / Reset Hardware]) --> B["Inicializar los 4 MAX7219 via SPI<br>- Shutdown = 0x01 (Encendido)<br>- Scan Limit = 0x07 (8 filas)<br>- Decode Mode = 0x00 (Matriz directa)<br>- Intensity = 0x04 (Brillo)"]
+    A([Inicializar]) --> B["Inicializar los 4 MAX7219 via SPI<br>- Shutdown = 0x01 (Encendido)<br>- Scan Limit = 0x07 (8 filas)<br>- Decode Mode = 0x00 (Matriz directa)<br>- Intensity = 0x04 (Brillo)"]
     
     B --> C["Identificar Juego / Modo Activo<br>(Pong, Carros, etc.)"]
     
