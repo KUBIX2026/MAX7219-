@@ -13,7 +13,7 @@ Este documento explica la implementacion de una pantalla auxiliar a la consola d
 3. [Temporización](#3-Temporización)
 4. [Cuatro módulos en cascada](#4-cuatro-módulos-en-cascada)
 5. [Inicialización](#5-inicialización)
-6. [Mostrar y hacer parpadear una falla](#6-Mostrar-evntos-de-juego
+6. [Mostrar eventos](#6-Mostrar-evntos-de-juego)
 7. [Ejemplo de implementación](#7-ejemplo-de-implementación)
 8. [Comprobaciones y límites](#8-comprobaciones-y-límites)
 
