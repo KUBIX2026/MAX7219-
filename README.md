@@ -114,7 +114,7 @@ El cronograma se incluye en la [lámina general de la cascada](#4-cuatro-módulo
 
 Una configuración SPI habitual es **modo 0** (`CPOL=0`, `CPHA=0`), MSB primero. Ajusta frecuencia y tiempos de establecimiento, retención y pulso de `LOAD` a la hoja de datos del chip y a las condiciones de tu cableado. La figura es conceptual y no está a escala.
 
-## 3. Comando de 16 bits y registros
+## Comando de 16 bits y registros
 
 ![Formato del frame de 16 bits del MAX7219](docs/assets/frame-16-bits.png)
 
