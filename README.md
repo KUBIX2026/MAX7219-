@@ -254,7 +254,7 @@ Viendolo en Hexadecimal (Recordando que cada dígito hex son 4 bits), la estruct
 Trama Hex = 0x + 0 + Comando + Valor (2 dígitos)
 
 
-## 2. Tabla de Registros y Comandos Principales
+## 9.1 Tabla de Registros y Comandos Principales
 
 | Dirección Hex (`D11..D8`) | Nombre del Registro | Descripción Sencilla | Valores Típicos y Uso |
 | :--- | :--- | :--- | :--- |
@@ -266,7 +266,7 @@ Trama Hex = 0x + 0 + Comando + Valor (2 dígitos)
 | `0xF` | **Display Test** | **Prueba de Funcionamiento:** Enciende absolutamente todos los LEDs de la pantalla al mismo tiempo para comprobar si hay algún LED dañado o mal soldado. | `0x00` = Funcionamiento normal.<br>`0x01` = Modo de prueba (enciende todo). |
 
 
-## 3. Ejemplos 
+## 9.2. Ejemplos 
 
 ### Ejemplo 1: Cambio de Brillo
 1. El comando de brillo es el registro `A` (en binario `1010`).
