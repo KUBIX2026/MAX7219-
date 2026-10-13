@@ -120,7 +120,7 @@ Por comodidad se envían **dos bytes**: primero la dirección `0x0R`, después e
 
 ## 4. Cuatro módulos en cascada
 
-![Vista general de la conexión FPGA, trama y temporización de cuatro MAX7219](assets/arquitectura-fpga-max7219.png)
+![Vista general de la conexión FPGA, trama y temporización de cuatro MAX7219](docs/assets/arquitectura-fpga-max7219.png)
 
 > **Cómo interpretar esta lámina:** la imagen adjunta reúne conexión, trama y temporización. Se conserva como vista general, con las siguientes correcciones técnicas que deben aplicarse al implementar el circuito:
 >
