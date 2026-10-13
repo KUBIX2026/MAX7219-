@@ -8,14 +8,16 @@ Este documento explica cómo enviar indicadores de falla desde un microcontrolad
 
 ## Índice
 
-1. [Conexión y señales](#1-conexión-y-señales)
-2. [Temporización de la transferencia](#2-temporización-de-la-transferencia)
-3. [Comando de 16 bits y registros](#3-comando-de-16-bits-y-registros)
+1. [Introducción y Especificaciones](#1-Introducción-y-Especificaciones-del-Hardware)
+2. [Diagrama de Caja Negra e Interfaz de Señales](#2-Diagrama-de-Caja-Negra-e-Interfaz-de-Señales)
+3. [Temporización](#3-Temporización)
 4. [Cuatro módulos en cascada](#4-cuatro-módulos-en-cascada)
 5. [Inicialización](#5-inicialización)
 6. [Mostrar y hacer parpadear una falla](#6-mostrar-y-hacer-parpadear-una-falla)
 7. [Ejemplo de implementación](#7-ejemplo-de-implementación)
 8. [Comprobaciones y límites](#8-comprobaciones-y-límites)
+
+actualizaaatataoajcjfidjcas
 
 # 1. Introducción y Especificaciones del Hardware
 
@@ -37,9 +39,8 @@ Este sistema de visualización está diseñado para mostrar información dinámi
 
 # 2. Diagrama de Caja Negra e Interfaz de Señales
 
-## Diagrama de Caja Negra (Black Box Diagram)
 
-El controlador (FPGA o Microcontrolador) actúa como maestro del bus SPI. Dado que la lógica del controlador opera a 3.3 V (LVCMOS) y los módulos MAX7219 requieren un umbral de alto de al menos 3.5 V cuando se alimentan con 5.0 V, las señales se canalizan a través de un **conversor de niveles lógicos (Logic Level Shifter)**.
+El controlador (FPGA) actúa como maestro del bus SPI. Dado que la lógica del controlador opera a 3.3 V (LVCMOS) y los módulos MAX7219 requieren un umbral de alto de al menos 3.5 V cuando se alimentan con 5.0 V, las señales se canalizan a través de un **conversor de niveles lógicos (Logic Level Shifter)**.
 
 El sistema de visualización se abstrae como un módulo de control donde la lógica del juego y las señales de alimentación entran al controlador, el cual procesa la información y la proyecta en la matriz física de $32 \times 8$ LEDs.
 
@@ -82,7 +83,7 @@ graph LR
 > * **Solución Implementada:** Se coloca un convertidor bidireccional/unidireccional de nivel lógico de alta velocidad en las líneas `DIN`, `CLK` y `CS/LOAD`.
 
 
-## 2. Temporización
+# 3. Temporización
 
 El cronograma se incluye en la [lámina general de la cascada](#4-cuatro-módulos-en-cascada).
 
