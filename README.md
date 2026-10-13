@@ -47,7 +47,7 @@ El sistema de visualización se abstrae como un módulo de control donde la lóg
 graph LR
     subgraph Entradas ["Entradas del Sistema"]
         E1["Eventos de Juego<br>(Score, GOL!, Gasolina, Marcha)"]
-        E2["Reloj y Reset<br>(clk, rst)"]
+        E2["Señales Control SPI<br>(CLK, CS/LOAD, DIN)"]
         E3["Líneas de Alimentación<br>(3.3V, 5.0V, GND)"]
     end
 
@@ -60,7 +60,7 @@ graph LR
     end
 
     E1 -->|Datos de Telemetría| CB
-    E2 -->|Sincronización| CB
+    E2 -->|Sincronización y Carga| CB
     E3 -->|Energía| CB
     CB -->|Matriz Dinámica| S1
 ```
