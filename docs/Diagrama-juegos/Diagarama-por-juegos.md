@@ -20,7 +20,6 @@ La matriz se divide en cuatro módulos, de izquierda a derecha: manzana fija, ma
 
 Se realizó un diagrama que define las acciones que realiza nuestro módulo desde la preparación hasta el fin del juego. El objetivo es que la matriz pueda mostrar el histórico de lanzamientos de cada jugador, para que no repitan jugadas erróneas.
 
-Aún estamos en espera de que el grupo de juegos entregue su diagrama, para definir cómo se implementa la mecánica de mostrar los movimientos. La vida y el puntaje de cada jugador se mostrarán en la otra pantalla; por ahora se dejan indicados en nuestro diagrama hasta que el grupo de juegos termine el suyo.
 
 ![Diagrama_batalla_naval](Diagrama_naval.jpeg)
 
@@ -28,7 +27,5 @@ Aún estamos en espera de que el grupo de juegos entregue su diagrama, para defi
 ## Galaga
 
 Se realizó un diagrama en el que la matriz muestra la cantidad de naves (vidas) de cada jugador y el stage en el que se encuentran. Se supone que el juego es infinito y solo termina cuando el jugador muere, es decir, cuando es impactado 3 veces.
-
-Estamos pendientes de que el grupo de juegos termine su diagrama, para saber en qué punto agregar, si es posible, una vida extra u otra mecánica similar.
 
 ![Diagrama_galaga](Diagrama_galaga.jpg)
