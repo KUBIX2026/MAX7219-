@@ -180,7 +180,7 @@ Tras encender el sistema, configura **cada chip**. Para ello, repite la misma pa
 | 5 | `0x01`–`0x08` | `0x00` | Limpiar las ocho posiciones en los cuatro módulos. |
 | 6 | `0x0C` | `0x01` | Salir del modo de apagado. |
 
-## 6. Mostrar evntos de juego
+## 6. Mostrar eventos de juego
 
 Guarda el patrón de cada indicador como ocho grupos de cuatro bytes: `bitmap[posición][módulo]`. La correspondencia entre el índice de módulo y su ubicación visible se determina en la prueba de montaje.
 
