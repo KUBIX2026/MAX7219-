@@ -153,4 +153,49 @@ flowchart TD
 
 Se realizó un diagrama en el que la matriz muestra la cantidad de naves (vidas) de cada jugador y el stage en el que se encuentran. Se supone que el juego es infinito y solo termina cuando el jugador muere, es decir, cuando es impactado 3 veces.
 
-![Diagrama_galaga](Diagrama_galaga.jpg)
+```mermaid
+
+flowchart TD
+    A(["Iniciar juego:<br/>Galaga"])
+
+    B["Seleccionar<br/>nave(s)"]
+
+    C{"Jugador(es)<br/>listo(s)?"}
+
+    D["Iniciar juego,<br/>3 vidas por<br/>jugador"]
+
+    E{"¿Jugador es<br/>impactado una<br/>vez?"}
+
+    F["Mostrar vida en la<br/>pantalla -1"]
+
+    G{"Vida<br/>total = 0?"}
+
+    H["GAME OVER"]
+
+    I["Continuar<br/>juego."]
+
+    J{"¿El jugador<br/>consiguió avanzar<br/>de nivel?"}
+
+    K["Mostrar lvl<br/>'x' en<br/>pantalla +<br/>cantidad de<br/>vidas del<br/>jugador"]
+
+    A --> B
+    B --> C
+
+    C -->|No| B
+    C -->|Sí| D
+
+    D --> E
+
+    E -->|Sí| F
+    F --> G
+
+    G -->|No| E
+    G -->|Sí| H
+
+    E -->|No| I
+    I --> J
+
+    J -->|Sí| K
+    K --> E
+```
+![Galaga](../assets/Galaga.png)
