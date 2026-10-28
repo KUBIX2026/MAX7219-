@@ -6,8 +6,32 @@ Se realizaron diagramas de flujo con ideas para usar la matriz de LEDs MAX7219 (
 
 La matriz muestra una flecha que apunta al jugador que debe golpear la pelota. Se redibuja solo cuando cambia el turno: en cada saque y cada vez que una paleta devuelve la pelota.
 
-![Diagrama_pong](Diagrama_pong.png)
+``m̀ermaid
+flowchart TD
+    A["Inicializar juego Pong"]
+    B["El juego empieza con la pelota al centro"]
+    C{"¿Turno?"}
+    D["bitmap = flecha derecha"]
+    E["bitmap = flecha izquierda"]
+    F[La pelota esta en juego, la flecha queda fija]
+    G{¿Que ocurre?}
+    H[Mostrar Gol]
+    I[Invertir turno, IZQ pasa a DER y viceversa]
+    J[Fin de partida Apagar matriz   Registros 0x01 a 0x08 = 0x00 en los 4 modulos]
+    K[Fin]
 
+    A --> B
+    B --> C
+    C -->|Jugador 1| D
+    C -->|Jugador 2| E
+    D-->F
+    E-->F
+    F-->G
+    G-->|La pelota pasa por un lado|H
+    G-->|La paleta golpea la pelota|I
+    I-->F
+    H-->J-->K
+``
 
 ## Snake
 
