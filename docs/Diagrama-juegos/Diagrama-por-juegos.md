@@ -94,6 +94,7 @@ flowchart TD
     J --> K
 
 ```
+![Snake](../assets/Snake.png)
 
 
 ## Batalla naval
