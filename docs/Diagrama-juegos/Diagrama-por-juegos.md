@@ -31,7 +31,7 @@ flowchart TD
     G-->|La paleta golpea la pelota|I
     I-->F
     H-->J-->K
-``
+```
 
 ## Snake
 
