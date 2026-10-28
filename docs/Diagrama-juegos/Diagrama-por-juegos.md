@@ -102,7 +102,51 @@ flowchart TD
 Se realizó un diagrama que define las acciones que realiza nuestro módulo desde la preparación hasta el fin del juego. El objetivo es que la matriz pueda mostrar el histórico de lanzamientos de cada jugador, para que no repitan jugadas erróneas.
 
 
-![Diagrama_batalla_naval](Diagrama_naval.jpeg)
+```mermaid
+
+flowchart TD
+    A(["Inicializar juego:<br/>NAVAL BATTLE"])
+    B["PREPARAR NAVES<br/>(esperar que cada<br/>jugador ubique sus<br/>barcos)"]
+    C{"Jugadores<br/>listos?"}
+
+    D["Turno P1"]
+    E{"Impactó algun<br/>objetivo"}
+    F["Registrar<br/>daño en p2"]
+    G{"Verificar<br/>si HP2=0"}
+    H["Finalizar<br/>juego,<br/>ganador P1"]
+
+    I["Turno P2"]
+    J{"Impactó algun<br/>objetivo"}
+    K["Registrar<br/>daño en p1"]
+    L{"Verificar<br/>si HP1=0"}
+    M["Finalizar<br/>juego,<br/>ganador P2"]
+
+    N(["JUEGO TERMINADO.<br/>MOSTRAR PUNTAJES DE LA<br/>PARTIDA"])
+
+    A --> B
+    B --> C
+    C -->|No| B
+    C -->|Sí| D
+
+    D --> E
+    E -->|Sí| F
+    F --> G
+    G -->|Sí| H
+    G -->|No| D
+
+    E -->|No| I
+    I --> J
+    J -->|Sí| K
+    K --> L
+    L -->|Sí| M
+    L -->|No| I
+
+    J -->|No| D
+
+    H --> N
+    M --> N
+```
+![BatallaNaval](../assets/BatallaNaval.png)
 
 
 ## Galaga
