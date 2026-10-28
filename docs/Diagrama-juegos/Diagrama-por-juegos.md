@@ -6,7 +6,7 @@ Se realizaron diagramas de flujo con ideas para usar la matriz de LEDs MAX7219 (
 
 La matriz muestra una flecha que apunta al jugador que debe golpear la pelota. Se redibuja solo cuando cambia el turno: en cada saque y cada vez que una paleta devuelve la pelota.
 
-```m̀ermaid
+```mermaid
 flowchart TD
     A["Inicializar juego Pong"]
     B["El juego empieza con la pelota al centro"]
