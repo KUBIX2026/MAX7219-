@@ -32,6 +32,7 @@ flowchart TD
     I-->F
     H-->J-->K
 ```
+![Pong](docs/assets)
 
 ## Snake
 
