@@ -38,7 +38,62 @@ flowchart TD
 
 La matriz se divide en cuatro módulos, de izquierda a derecha: manzana fija, manzanas recogidas, serpiente fija y longitud de la serpiente.
 
-![Diagrama_snake](Diagrama_snake.png)
+```mermaid
+
+flowchart TD
+    A(["Inicializar juego: Snake"])
+
+    B["Inicializar partida
+    manzanas = 0
+    longitud = 3
+    Serpiente y primera manzana en el tablero"]
+
+    C["Cargar iconos fijos
+    Módulo 1 = bitmap MANZANA
+    Módulo 3 = bitmap SERPIENTE"]
+
+    D["Separar dígitos
+    manzanas: decenas y unidades
+    longitud: decenas y unidades"]
+
+    E["Armar bitmap de cada contador
+    Fuente 3x5 por dígito
+    Módulo 2 = manzanas, Módulo 4 = longitud"]
+
+    F["Serpiente en movimiento
+    Leer control NES, teclado o mouse
+    Avanzar la cabeza una casilla"]
+
+    G{"¿La serpiente avanzó?"}
+
+    H["longitud = longitud + 1
+    Si llegó a una manzana: manzanas = manzanas + 1"]
+
+    I["Actualizar solo módulos 2 y 4
+    Enviar no-op 0x0000 a módulos 1 y 3"]
+
+    J["Fin de partida
+    Apagar matriz
+    Registros 0x01 a 0x08 = 0x00 en los 4 módulos"]
+
+    K(["Fin"])
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+
+    G -->|Nada| F
+    G -->|Sí| H
+    H --> I
+    I --> F
+
+    G -->|Choque con pared o con el cuerpo| J
+    J --> K
+
+```
 
 
 ## Batalla naval
