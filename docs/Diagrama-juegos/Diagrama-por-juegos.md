@@ -199,3 +199,98 @@ flowchart TD
     K --> E
 ```
 ![Galaga](../assets/Galaga.png)
+
+
+##Breakout
+
+
+```mermaid
+
+flowchart TD
+    A(["Iniciar juego: Breakout"])
+
+    B["Seleccionar modo de juego<br/>1 jugador o 2 jugadores"]
+
+    C["Inicializar partida<br/>3 vidas por jugador<br/>Puntaje = 0<br/>Nivel = 1"]
+
+    D["Preparar muro de 36 bloques<br/>Colocar pelota sobre la paleta"]
+
+    E["Mostrar 3 corazones<br/>en pantalla MAX7219"]
+
+    F{"¿Jugador lanzó<br/>la pelota?"}
+
+    G["Esperar que el jugador<br/>presione A o el control de saque"]
+
+    H["Pelota en movimiento<br/>Controlar paleta y rebotes"]
+
+    I{"¿La pelota<br/>cayó?"}
+
+    J["Restar una vida<br/>Actualizar corazones<br/>en MAX7219"]
+
+    K{"¿Jugador tiene<br/>vidas restantes?"}
+
+    L{"¿Modo de<br/>2 jugadores?"}
+
+    M{"¿El otro jugador<br/>tiene vidas?"}
+
+    N["Cambiar turno<br/>Mostrar PLAYER n<br/>Preparar pelota sobre paleta"]
+
+    O["Mostrar indicador LOSE<br/>en MAX7219"]
+
+    P{"¿Se rompió<br/>un bloque?"}
+
+    Q["Sumar puntos según fila<br/>Aumentar velocidad de pelota"]
+
+    R{"¿Se rompieron<br/>todos los bloques?"}
+
+    S["Mostrar LEVEL n<br/>en pantalla principal<br/>Generar nuevo muro"]
+
+    T["Aumentar nivel<br/>Iniciar muro con mayor velocidad"]
+
+    U["Mostrar puntajes finales<br/>Finalizar partida"]
+
+    V["Apagar o reiniciar<br/>pantalla MAX7219"]
+
+    W(["Fin"])
+
+    A --> B --> C --> D --> E --> F
+
+    F -->|No| G
+    G --> F
+
+    F -->|Sí| H
+    H --> I
+
+    I -->|Sí| J
+    J --> K
+
+    K -->|Sí| L
+    L -->|No| O
+
+    O --> M
+
+    I -->|No| P
+
+    P -->|Sí| Q
+    P -->|No| H
+
+    Q --> R
+
+    R -->|No| H
+    R -->|Sí| S
+
+    S --> T
+    T --> D
+
+    L -->|No| D
+    L -->|Sí| M
+
+    M -->|Sí| N
+    N --> D
+
+    M -->|No| U
+
+    U --> V --> W
+```
+![Breakout](../assets/Breakout.png)
+
