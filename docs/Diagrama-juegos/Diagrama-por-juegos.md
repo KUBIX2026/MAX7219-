@@ -198,10 +198,10 @@ flowchart TD
     J -->|Sí| K
     K --> E
 ```
-![Galaga](../assets/Galaga.png)
+![Galaga](../assets/Galaga1.png)
 
 
-##Breakout
+## Breakout
 
 
 ```mermaid
@@ -270,3 +270,64 @@ flowchart TD
 ```
 ![Breakout](../assets/Breakout.png)
 
+## Road Fighter
+
+```mermaid
+
+flowchart TD
+    A(["Iniciar juego: Road Fighter"])
+
+    B["Inicializar pantalla MAX7219<br/>Tiempo, velocidad y gasolina"]
+
+    C["Mostrar indicadores normales<br/>Tiempo restante<br/>Velocidad y gasolina"]
+
+    D["Actualizar datos de la carrera"]
+
+    E{"¿El jugador<br/>llegó a la meta?"}
+
+    F["Mostrar bitmap META<br/>en MAX7219"]
+
+    G{"¿Se agotó<br/>el tiempo?"}
+
+    H["Mostrar bitmap TIME 0<br/>en MAX7219"]
+
+    I{"¿Ocurrió<br/>una colisión?"}
+
+    J["Mostrar bitmap CRASH<br/>en MAX7219"]
+
+    K{"¿Recibió<br/>gasolina extra?"}
+
+    L["Mostrar bitmap +FUEL<br/>en MAX7219"]
+
+    M["Restaurar indicadores normales<br/>Tiempo, velocidad y gasolina"]
+
+    N["Apagar matriz MAX7219<br/>Registros 0x01 a 0x08 = 0x00<br/>en los 4 módulos"]
+
+    O(["Fin"])
+
+    A --> B --> C --> D --> E
+
+    E -->|Sí| F
+    E -->|No| G
+
+    G -->|Sí| H
+    G -->|No| I
+
+    I -->|Sí| J
+    I -->|No| K
+
+    J --> K
+
+    K -->|Sí| L
+    K -->|No| M
+
+    L --> M
+    M --> D
+
+    F --> N
+    H --> N
+    N --> O
+
+```
+
+![RoadFighter](../assets/RoadFighter.png)
