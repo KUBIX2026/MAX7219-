@@ -229,7 +229,6 @@ flowchart TD
     S["Mostrar LEVEL n<br/>Preparar siguiente muro"]
     T["Incrementar nivel<br/>y velocidad inicial"]
     U["Mostrar LOSE en MAX7219"]
-    V["Mostrar puntajes finales"]
     W(["Fin"])
     X{"¿Queda algún<br/>jugador con vidas?"}
 
@@ -267,7 +266,7 @@ flowchart TD
     N -->|No| F
     O --> E
 
-    U --> V --> W
+    U --> W
 ```
 ![Breakout](../assets/Breakout.png)
 
