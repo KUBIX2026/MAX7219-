@@ -45,8 +45,7 @@ Este sistema de visualización está diseñado para mostrar información dinámi
 | GPIO de salida | `CS` / `LOAD` | En bajo se desplazan bits; el flanco ascendente carga los registros. |
 | Alimentación | `VCC`, `GND` | Alimentación y tierra común según el módulo utilizado. |
 
-`DOUT` del primer chip se conecta a `DIN` del siguiente. `CLK` y `CS/LOAD` se distribuyen a todos los chips. No se conecta `MISO` porque el MAX7219 no devuelve datos. Comprueba los niveles lógicos admitidos por tu placa y el módulo: un controlador de 3,3 V no debe suponerse compatible con una entrada alimentada a 5 V sin revisar sus especificaciones.
-
+`DOUT` del primer chip se conecta a `DIN` del siguiente. `CLK` y `CS/LOAD` se distribuyen a todos los chips. No se conecta `MISO` porque el MAX7219 no devuelve datos. 
 > **Nota sobre niveles de voltaje (3.3V vs 5V)**
 >
 > * **Conflicto de Voltajes:** Los pines de I/O de la FPGA operan con lógica de 3.3V LVCMOS, mientras que el controlador MAX7219 se alimenta a 5V.
