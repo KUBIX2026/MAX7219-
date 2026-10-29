@@ -206,89 +206,66 @@ flowchart TD
 
 ```mermaid
 
+
 flowchart TD
     A(["Iniciar juego: Breakout"])
-
-    B["Seleccionar modo de juego<br/>1 jugador o 2 jugadores"]
-
-    C["Inicializar partida<br/>3 vidas por jugador<br/>Puntaje = 0<br/>Nivel = 1"]
-
-    D["Preparar muro de 36 bloques<br/>Colocar pelota sobre la paleta"]
-
-    E["Mostrar 3 corazones<br/>en pantalla MAX7219"]
-
-    F{"¿Jugador lanzó<br/>la pelota?"}
-
-    G["Esperar que el jugador<br/>presione A o el control de saque"]
-
-    H["Pelota en movimiento<br/>Controlar paleta y rebotes"]
-
-    I{"¿La pelota<br/>cayó?"}
-
-    J["Restar una vida<br/>Actualizar corazones<br/>en MAX7219"]
-
-    K{"¿Jugador tiene<br/>vidas restantes?"}
-
-    L{"¿Modo de<br/>2 jugadores?"}
-
-    M{"¿El otro jugador<br/>tiene vidas?"}
-
-    N["Cambiar turno<br/>Mostrar PLAYER n<br/>Preparar pelota sobre paleta"]
-
-    O["Mostrar indicador LOSE<br/>en MAX7219"]
-
+    B["Seleccionar modo de juego<br/>1 o 2 jugadores"]
+    C["Inicializar cada jugador<br/>3 vidas, puntaje 0, nivel 1<br/>Muro independiente"]
+    D["Seleccionar jugador activo"]
+    E{"¿Jugador activo<br/>tiene vidas?"}
+    F["Mostrar vidas en MAX7219<br/>Preparar pelota sobre paleta"]
+    G{"¿Jugador lanzó<br/>la pelota?"}
+    H["Esperar lanzamiento"]
+    I["Pelota en movimiento"]
+    J{"¿Pelota cayó?"}
+    K["Restar una vida al<br/>jugador activo"]
+    L["Actualizar corazones<br/>en MAX7219"]
+    M{"¿Quedan vidas<br/>al jugador?"}
+    N{"¿Hay otro jugador<br/>con vidas?"}
+    O["Cambiar al otro jugador<br/>Restaurar su muro y puntaje"]
     P{"¿Se rompió<br/>un bloque?"}
-
-    Q["Sumar puntos según fila<br/>Aumentar velocidad de pelota"]
-
-    R{"¿Se rompieron<br/>todos los bloques?"}
-
-    S["Mostrar LEVEL n<br/>en pantalla principal<br/>Generar nuevo muro"]
-
-    T["Aumentar nivel<br/>Iniciar muro con mayor velocidad"]
-
-    U["Mostrar puntajes finales<br/>Finalizar partida"]
-
-    V["Apagar o reiniciar<br/>pantalla MAX7219"]
-
+    Q["Sumar puntos según fila<br/>Aumentar velocidad"]
+    R{"¿Muro vacío?"}
+    S["Mostrar LEVEL n<br/>Preparar siguiente muro"]
+    T["Incrementar nivel<br/>y velocidad inicial"]
+    U["Mostrar LOSE en MAX7219"]
+    V["Mostrar puntajes finales"]
     W(["Fin"])
+    X{"¿Queda algún<br/>jugador con vidas?"}
 
-    A --> B --> C --> D --> E --> F
+    A --> B --> C --> D --> E
 
-    F -->|No| G
-    G --> F
+    E -->|Sí| F
+    E -->|No| X
+    X -->|Sí| D
+    X -->|No| U
 
-    F -->|Sí| H
-    H --> I
+    F --> G
+    G -->|No| H
+    H --> G
+    G -->|Sí| I
 
-    I -->|Sí| J
-    J --> K
+    I --> J
 
-    K -->|Sí| L
-    L -->|No| O
-
-    O --> M
-
-    I -->|No| P
-
+    J -->|No| P
+    P -->|No| I
     P -->|Sí| Q
-    P -->|No| H
-
     Q --> R
-
-    R -->|No| H
+    R -->|No| I
     R -->|Sí| S
-
     S --> T
-    T --> D
+    T --> F
 
-    L -->|No| D
-    L -->|Sí| M
+    J -->|Sí| K
+    K --> L
+    L --> M
 
     M -->|Sí| N
-    N --> D
+    M -->|No| X
 
-    M -->|No| U
+    N -->|Sí| O
+    N -->|No| F
+    O --> E
 
     U --> V --> W
 ```
