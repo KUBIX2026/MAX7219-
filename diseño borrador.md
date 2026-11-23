@@ -1,6 +1,6 @@
 # Diseño-revisar
 
-## 1.1 Descripción General y Caja Negra
+## 1.1 Descripción General y Caja Negra- REVISARR
 
 Este subsistema implementa en mediannte (FPGA **Lattice iCE40UP5K**) una pantalla auxiliar de eventos y puntajes, con una **matriz LED de 8×32** formada por **4 circuitos integrados MAX7219 conectados en cascada** sobre una placa de circuito impreso (PCB) única (`FC16` 4-en-1).
 
@@ -244,7 +244,7 @@ Este tiempo de respuesta inferior a $1\text{ ms}$ garantiza que cualquier actual
 
 ## 1.6 Partición Hardware-Software y Análisis de Alternativas- ver esto
 
-| Subsistema | Responsabilidad Asignada | Justificación Técnica |
+| Subsistema | Responsabilidad Asignada | Justificación Técnica (por qué |
 |:---|:---|:---|
 | **Hardware (FPGA — RTL)** | Generación síncrona de `SCLK` (`1 MHz`), serialización de tramas de 64 bits, control de `CS/LOAD`, almacenamiento en `ROM` y mapeo de *Framebuffer*. | Garantiza determinismo temporal estricto en el bus SPI en cascada y libera al procesador/lógica del juego de gestionar protocolos serie bit a bit. |
 | **Lógica del Juego (Host)** | Detección de colisiones/eventos del juego, cálculo del puntaje acumulativo y emisión del código `event_id` con pulso `valid`. | Desacopla las reglas del videojuego de la representación gráfica; permite cambiar íconos o fuentes en la FPGA sin alterar la lógica del juego. |
