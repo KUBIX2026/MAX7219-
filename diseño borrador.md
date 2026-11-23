@@ -2,9 +2,9 @@
 
 ## 1.1 Descripción General y Caja Negra
 
-Este subsistema implementa en hardware (FPGA **Lattice iCE40UP5K**) un controlador periférico encargado de desplegar información auxiliar de eventos y puntajes en tiempo real sobre una **matriz LED de 8×32** formada por **4 circuitos integrados MAX7219 conectados en cascada** sobre una placa de circuito impreso (PCB) única (`FC16` 4-en-1).
+Este subsistema implementa en mediannte (FPGA **Lattice iCE40UP5K**) una pantalla auxiliar de eventos y puntajes, con una **matriz LED de 8×32** formada por **4 circuitos integrados MAX7219 conectados en cascada** sobre una placa de circuito impreso (PCB) única (`FC16` 4-en-1).
 
-Para optimizar recursos lógicos y simplificar el direccionamiento de memoria, la pantalla de **32 columnas** se divide funcionalmente en dos mitades de **16 columnas** cada una (módulos numerados de `0` a `3` desde el puerto de entrada `IN` hacia `OUT`):
+La pantalla de **32 columnas** se divide funcionalmente en dos mitades de **16 columnas** cada una (módulos numerados de `0` a `3` desde el puerto de entrada `IN` hacia `OUT`):
 
 - **Módulos `0` y `1` (Columnas `0` a `15`):** Despliegan el **puntaje dinámico (`score`)** del jugador mediante caracteres almacenados en `ROM_FONT`.
 - **Módulos `2` y `3` (Columnas `16` a `31`):** Despliegan **íconos o gráficos de estado (`16×8` píxeles)** almacenados en `ROM_IMG`, seleccionados según el evento ocurrido en el juego (`event_id`).
