@@ -242,15 +242,3 @@ Este tiempo de respuesta inferior a $1\text{ ms}$ garantiza que cualquier actual
 
 ---
 
-## 1.6 Partición Hardware-Software y Análisis de Alternativas- ver esto
-
-| Subsistema | Responsabilidad Asignada | Justificación Técnica (por qué |
-|:---|:---|:---|
-| **Hardware (FPGA — RTL)** | Generación síncrona de `SCLK` (`1 MHz`), serialización de tramas de 64 bits, control de `CS/LOAD`, almacenamiento en `ROM` y mapeo de *Framebuffer*. | Garantiza determinismo temporal estricto en el bus SPI en cascada y libera al procesador/lógica del juego de gestionar protocolos serie bit a bit. |
-| **Lógica del Juego (Host)** | Detección de colisiones/eventos del juego, cálculo del puntaje acumulativo y emisión del código `event_id` con pulso `valid`. | Desacopla las reglas del videojuego de la representación gráfica; permite cambiar íconos o fuentes en la FPGA sin alterar la lógica del juego. |
-
-### Justificación de Alternativas de Diseño
-
-1. **Transmisión en cascada de 64 bits con pulso `CS` único vs. 4 líneas `CS` independientes:** Al encadenar `DOUT → DIN` sobre la PCB y compartir `SCLK` y `CS/LOAD`, se utilizan únicamente **3 pines de I/O** en la iCE40UP5K (`MOSI`, `SCLK`, `CS`) y se logra la actualización simultánea de los 4 módulos en el flanco de subida de `CS`.
-2. **Habilitación síncrona (`spi_tick`) vs. relojes derivados:** Operar todos los registros bajo el mismo reloj de $12\text{ MHz}$ evita problemas de *skew* y cruces de dominio de reloj (*CDC*), simplificando el análisis estático de tiempos (*STA*) en la herramienta de síntesis.
-3. **División fija de módulos (`2 módulos puntaje + 2 módulos imagen`) vs. renderizado dinámico completo:** Reservar `FB[0..15]` para `ROM_FONT` y `FB[16..31]` para `ROM_IMG` elimina multiplexores complejos por píxel y reduce significativamente el consumo de celdas lógicas (*LUTs*) y bloques de memoria (*EBR*) en la iCE40UP5K.
