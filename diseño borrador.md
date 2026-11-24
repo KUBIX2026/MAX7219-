@@ -7,6 +7,7 @@
 ```mermaid
 flowchart TD
     classDef inicio fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    classDef bloque fill:#ffffff,stroke:#374151,stroke-width:1.5px,color:#111827
     classDef rombo fill:#fff3cd,stroke:#d97706,stroke-width:2px,color:#1f2937
 
     START(["INICIO (Reset FPGA)"]) --> INIT["S_RESET<br/>busy=1, CS=1<br/>idx=0, mode=SCORE"]
@@ -55,6 +56,7 @@ flowchart TD
     CHK_EVT -->|No| BUILD_EVENT
 
     class START inicio
+    class INIT,CFG_LOAD,CFG_TX,CFG_LATCH,BUILD_SCORE,BUILD_EVENT,ROW_PACK,ROW_TX,ROW_LATCH,INC_ROW,SHOW_SCORE,SHOW_EVENT,CAPTURE bloque
     class CHK_SPI_CFG,CHK_IDX,CHK_SPI_ROW,CHK_ROW,CHK_MODE,CHK_VAL_SCORE,CHK_VAL_EVT,CHK_TIMER,CHK_EVT rombo
 
 ```
