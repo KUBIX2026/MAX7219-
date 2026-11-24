@@ -1,10 +1,67 @@
 # Diseño-revisar
 
+
+
+
+# Flujo CON ESTADOS
+```mermaid
+flowchart TD
+    classDef inicio fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    classDef rombo fill:#fff3cd,stroke:#d97706,stroke-width:2px,color:#1f2937
+
+    START(["INICIO (Reset FPGA)"]) --> INIT["S_RESET<br/>busy=1, CS=1<br/>idx=0, mode=SCORE"]
+
+    %% ---------- Configuración ----------
+    INIT --> CFG_LOAD["S_CFG_LOAD<br/>busy=1, CS=1<br/>tx_shift={4{ROM_CFG[idx]}}<br/>bit_cnt=63"]
+    CFG_LOAD --> CFG_TX["S_CFG_TX<br/>busy=1, CS=0<br/>envía 64 bits por SPI"]
+    CFG_TX --> CHK_SPI_CFG{"¿spi_done?<br/>(bit_cnt == 0)"}
+    CHK_SPI_CFG -->|No| CFG_TX
+    CHK_SPI_CFG -->|Sí| CFG_LATCH["S_CFG_LATCH<br/>busy=1, CS=1<br/>fija trama e idx++"]
+    CFG_LATCH --> CHK_IDX{"¿idx == 5?"}
+    CHK_IDX -->|No| CFG_LOAD
+    CHK_IDX -->|Sí| BUILD_SCORE
+
+    %% ---------- Armado del framebuffer ----------
+    BUILD_SCORE["S_BUILD_SCORE<br/>busy=1, CS=1<br/>mode=SCORE<br/>FB ← dígitos de score_reg<br/>row=0"] --> ROW_PACK
+    BUILD_EVENT["S_BUILD_EVENT<br/>busy=1, CS=1<br/>mode=EVENT<br/>FB ← ROM_IMG[img_id]<br/>timer=0, row=0"] --> ROW_PACK
+
+    %% ---------- Refresco ----------
+    ROW_PACK["S_ROW_PACK<br/>busy=1, CS=1<br/>arma 64 bits fila row+1<br/>bit_cnt=63"] --> ROW_TX
+    ROW_TX["S_ROW_TX<br/>busy=1, CS=0<br/>envía 64 bits por SPI"]
+    ROW_TX --> CHK_SPI_ROW{"¿spi_done?<br/>(bit_cnt == 0)"}
+    CHK_SPI_ROW -->|No| ROW_TX
+    CHK_SPI_ROW -->|Sí| ROW_LATCH
+    ROW_LATCH["S_ROW_LATCH<br/>busy=1, CS=1<br/>fila visible en matriz"] --> CHK_ROW{"¿row == 7?"}
+
+    CHK_ROW -->|No| INC_ROW["row = row + 1"] --> ROW_PACK
+    CHK_ROW -->|Sí| CHK_MODE{"¿mode == EVENT?"}
+
+    %% ---------- Visualización ----------
+    CHK_MODE -->|No| SHOW_SCORE["S_SHOW_SCORE<br/>busy=0, CS=1<br/>muestra puntaje"]
+    SHOW_SCORE --> CHK_VAL_SCORE{"¿valid == 1?"}
+    CHK_VAL_SCORE -->|No| SHOW_SCORE
+    CHK_VAL_SCORE -->|Sí| CAPTURE
+
+    CHK_MODE -->|Sí| SHOW_EVENT["S_SHOW_EVENT<br/>busy=0, CS=1<br/>muestra evento, timer++ en tick"]
+    SHOW_EVENT --> CHK_VAL_EVT{"¿valid == 1?"}
+    CHK_VAL_EVT -->|Sí| CAPTURE
+    CHK_VAL_EVT -->|No| CHK_TIMER{"¿timer == T_EVT?"}
+    CHK_TIMER -->|No| SHOW_EVENT
+    CHK_TIMER -->|Sí| BUILD_SCORE
+
+    %% ---------- Captura ----------
+    CAPTURE["S_CAPTURE<br/>busy=1, CS=1<br/>guarda score, event_id e img_id"] --> CHK_EVT{"¿event_id == 0?"}
+    CHK_EVT -->|Sí| BUILD_SCORE
+    CHK_EVT -->|No| BUILD_EVENT
+
+    class START inicio
+    class CHK_SPI_CFG,CHK_IDX,CHK_SPI_ROW,CHK_ROW,CHK_MODE,CHK_VAL_SCORE,CHK_VAL_EVT,CHK_TIMER,CHK_EVT rombo
+
+```m
+
 ## 1.1 Descripción General y Caja Negra- REVISARR
 
-Este subsistema implementa en mediannte (FPGA **Lattice iCE40UP5K**) una pantalla auxiliar de eventos y puntajes, con una **matriz LED de 8×32** formada por **4 circuitos integrados MAX7219 conectados en cascada** sobre una placa de circuito impreso (PCB) única (`FC16` 4-en-1).
-
-La pantalla de **32 columnas** se divide funcionalmente en dos mitades de **16 columnas** cada una (módulos numerados de `0` a `3` desde el puerto de entrada `IN` hacia `OUT`):
+Se divide funcionalmente en dos mitades de **16 columnas** cada una (módulos numerados de `0` a `3` desde el puerto de entrada `IN` hacia `OUT`): YA NO
 
 - **Módulos `0` y `1` (Columnas `0` a `15`):** Despliegan el **puntaje dinámico (`score`)** del jugador mediante caracteres almacenados en `ROM_FONT`.
 - **Módulos `2` y `3` (Columnas `16` a `31`):** Despliegan **íconos o gráficos de estado (`16×8` píxeles)** almacenados en `ROM_IMG`, seleccionados según el evento ocurrido en el juego (`event_id`).
@@ -130,34 +187,6 @@ Al producirse un reinicio (`rst`), el controlador recorre las 5 posiciones (`idx
 
 ---
 
-## 1.3 Diagrama de Flujo Operacional
-
-El algoritmo operacional se divide en dos fases: una **rutina única de inicialización** tras el *reset* del sistema y un **bucle reactivo por eventos** que actualiza el *Framebuffer* y barre las 8 filas de la matriz cada vez que el juego emite `valid = 1`.
-
-```mermaid
-flowchart TD
-    START(["INICIO (Reset de la FPGA)"]) --> INIT_VAR["idx = 0<br/>busy = 1, CS = 1"]
-    INIT_VAR --> LOAD_CFG["Cargar trama de 64 bits:<br/>tx_shift = {4 {ROM_CFG[idx]}}"]
-    LOAD_CFG --> TX_CFG["Enviar 64 bits por SPI<br/>y pulsar CS (0 → 1)"]
-    TX_CFG --> CHK_IDX{"¿idx == 4?"}
-    CHK_IDX -->|No| INC_IDX["idx = idx + 1"] --> LOAD_CFG
-    CHK_IDX -->|Sí| IDLE_WAIT["Estado IDLE:<br/>busy = 0 (Esperando comando)"]
-
-    IDLE_WAIT --> CHK_VAL{"¿valid == 1?"}
-    CHK_VAL -->|No| IDLE_WAIT
-    CHK_VAL -->|Sí| CAP["busy = 1<br/>Capturar event_id y score<br/>img_id = ROM_EVT[event_id]"]
-
-    CAP --> GEN_FB["Actualizar Framebuffer FB[0..31]:<br/>• FB[0..15] ← Dígitos de score (ROM_FONT)<br/>• FB[16..31] ← Gráfico img_id (ROM_IMG)"]
-    GEN_FB --> ROW_ZERO["row = 0"]
-
-    ROW_ZERO --> PACK["Armar trama 64 bits para fila (row + 1):<br/>• Chip 3: {4'b0, row+1, FB_chip3[row]}<br/>• Chip 2: {4'b0, row+1, FB_chip2[row]}<br/>• Chip 1: {4'b0, row+1, FB_chip1[row]}<br/>• Chip 0: {4'b0, row+1, FB_chip0[row]}"]
-    PACK --> TX_ROW["Enviar 64 bits por SPI<br/>y pulsar CS (0 → 1)"]
-    TX_ROW --> CHK_ROW{"¿row == 7?"}
-    CHK_ROW -->|No| INC_ROW["row = row + 1"] --> PACK
-    CHK_ROW -->|Sí| IDLE_WAIT
-```
-
-**Figura 3.** Diagrama de flujo operacional del controlador de matriz LED 8×32.
 
 ---
 
