@@ -57,7 +57,7 @@ flowchart TD
     class START inicio
     class CHK_SPI_CFG,CHK_IDX,CHK_SPI_ROW,CHK_ROW,CHK_MODE,CHK_VAL_SCORE,CHK_VAL_EVT,CHK_TIMER,CHK_EVT rombo
 
-```m
+```
 
 ## 1.1 Descripción General y Caja Negra- REVISARR
 
