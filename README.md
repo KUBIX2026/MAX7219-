@@ -45,8 +45,7 @@ Este sistema de visualización está diseñado para mostrar información dinámi
 | GPIO de salida | `CS` / `LOAD` | En bajo se desplazan bits; el flanco ascendente carga los registros. |
 | Alimentación | `VCC`, `GND` | Alimentación y tierra común según el módulo utilizado. |
 
-`DOUT` del primer chip se conecta a `DIN` del siguiente. `CLK` y `CS/LOAD` se distribuyen a todos los chips. No se conecta `MISO` porque el MAX7219 no devuelve datos. Comprueba los niveles lógicos admitidos por tu placa y el módulo: un controlador de 3,3 V no debe suponerse compatible con una entrada alimentada a 5 V sin revisar sus especificaciones.
-
+`DOUT` del primer chip se conecta a `DIN` del siguiente. `CLK` y `CS/LOAD` se distribuyen a todos los chips. No se conecta `MISO` porque el MAX7219 no devuelve datos. 
 > **Nota sobre niveles de voltaje (3.3V vs 5V)**
 >
 > * **Conflicto de Voltajes:** Los pines de I/O de la FPGA operan con lógica de 3.3V LVCMOS, mientras que el controlador MAX7219 se alimenta a 5V.
@@ -186,26 +185,35 @@ Guarda el patrón de cada indicador como ocho grupos de cuatro bytes: `bitmap[po
 
 ```mermaid
 graph TD
-    A([Inicializar]) --> B["Inicializar los 4 MAX7219 via SPI<br>- Shutdown = 0x01 (Encendido)<br>- Scan Limit = 0x07 (8 filas)<br>- Decode Mode = 0x00 (Matriz directa)<br>- Intensity = 0x04 (Brillo)"]
-    
-    B --> C["Identificar Juego<br>(Pong, Carros, etc.)"]
-    
-    C --> D["Esperar Evento o Cambio de Estado del Juego<br>(Ej: Gol, Cambio de Puntos, Nivel Gasolina, Marcha)"]
-    
-    D --> E{"¿Hay actualización de estado?"}
-    
-    E -- No --> D
-    
-    E -- Sí --> F["Mapear Sprites / Patrones de Píxeles<br>Cargar en Framebuffer (32 x 8 bits)"]
-    
-    F --> G["Para cada Fila (Registros 0x01 a 0x08):<br>1. Bajar CS/LOAD = LOW<br>2. Transmitir 64 bits serie via DIN/CLK (16 bits x 4 chips)<br>3. Subir CS/LOAD = HIGH (Latch de datos)"]
-    
-    G --> H{"¿El evento requiere <br> animación / parpadeo?"}
-    
-    H -- Sí --> I["Esperar temporizador de cuadro (ej: 250ms / 500ms)<br>y actualizar siguiente frame"]
-    I --> F
-    
-    H -- No --> D
+    %% Parte 1: configuración
+    INICIO(["INICIO<br>(reset de la FPGA)"]) --> IDX0["idx = 0"]
+    IDX0 --> CFG["SR = ROM_CFG[idx]<br>(dir, dato) x 4"]
+    CFG --> SPI1[["Enviar SR por SPI<br>(64 bits)"]]
+    SPI1 --> CHKIDX{"idx == 4?"}
+    CHKIDX -- No --> INCIDX["idx = idx + 1"]
+    INCIDX --> CFG
+
+    %% Espera del evento
+    CHKIDX -- Sí --> ESPERA{"new_data == 1?"}
+    ESPERA -- No --> ESPERA
+
+    %% Parte 2: traducir el evento y preparar el framebuffer
+    ESPERA -- Sí --> CAPT["Capturar entradas<br>(event_id, valor)"]
+    CAPT --> TRAD["{tipo, img_id} = ROM_EVT[event_id]"]
+    TRAD --> ADDR0["addr = 0"]
+    ADDR0 --> COPIA["FB[addr] = (tipo == IMAGEN) ?<br>ROM_IMG[img_id, addr] :<br>ROM_FONT[valor[chip], fila]"]
+    COPIA --> CHKADDR{"addr == 31?"}
+    CHKADDR -- No --> INCADDR["addr = addr + 1"]
+    INCADDR --> COPIA
+
+    %% Parte 3: enviar el framebuffer
+    CHKADDR -- Sí --> FILA0["fila = 0"]
+    FILA0 --> ARMAR["SR = {0000, fila+1, FB[chip, fila]}<br>para los 4 chips"]
+    ARMAR --> SPI2[["Enviar SR por SPI<br>(64 bits)"]]
+    SPI2 --> CHKFILA{"fila == 7?"}
+    CHKFILA -- No --> INCFILA["fila = fila + 1"]
+    INCFILA --> ARMAR
+    CHKFILA -- Sí --> ESPERA
 ```
 La limpieza requiere escribir `0x00` en **los ocho registros de cada módulo**. Subir `LOAD` no borra ni alterna por sí solo los LED. Para evitar esperas bloqueantes, un sistema que atienda otras tareas puede alternar el bitmap y la pantalla vacía con un temporizador de 500 ms.
 
