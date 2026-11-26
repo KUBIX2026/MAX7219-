@@ -215,6 +215,12 @@ LEDs:  [ ] [ ] [*] [*] [*] [*] [ ] [ ]
 Juntas `0` + `1` + `3C` = `0x013C` (en binario: `0000 0001 0011 1100`).
 
 
+# Diagramas de transmision y secuencia
+
+(docs/assets/transmision.jpeg)
+
+(docs/assets/secuencia.jpeg)
+
 
 
 ### Referencia técnica
